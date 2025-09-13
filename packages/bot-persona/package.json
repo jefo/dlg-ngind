@@ -1,0 +1,15 @@
+{
+  "name": "bot-persona",
+  "module": "index.ts",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "@maxdev1/sotajs": "^0.0.7",
+    "ajv": "^8.17.1"
+  }
+}
