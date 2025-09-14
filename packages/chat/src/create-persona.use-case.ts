@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { usePort } from "@maxdev1/sotajs-patched";
+import { usePort } from "@maxdev1/sotajs";
 import { savePersonaPort } from "./chat.domain.ports";
-import { PersonaEntity } from "./persona.entity";
+import { PersonaEntity } from "./domain/persona.entity";
 
 // Zod schema for input validation
 const CreatePersonaInputSchema = z.object({

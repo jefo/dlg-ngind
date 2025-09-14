@@ -1,7 +1,7 @@
 import { describe, it, expect } from "bun:test";
 
 // Import directly from the sotajs lib files to avoid loading index.ts
-import { createEntity } from '@maxdev1/sotajs/lib/entity';
+import { createEntity } from '@maxdev1/sotajs';
 import { z } from 'zod';
 
 // Recreate our entities in the test to avoid import issues

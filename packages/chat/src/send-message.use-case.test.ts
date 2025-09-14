@@ -1,7 +1,7 @@
 import { describe, test, expect } from "bun:test";
-import { ChatEntity } from "./chat.entity";
-import { PersonaEntity } from "./persona.entity";
-import { Message } from "./message.entity";
+import { ChatEntity } from "./domain/chat.entity";
+import { PersonaEntity } from "./domain/persona.entity";
+import { Message } from "./domain/message.entity";
 
 describe("sendMessageUseCase", () => {
 	test("should validate input correctly", async () => {

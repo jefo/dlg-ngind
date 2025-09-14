@@ -1,12 +1,13 @@
 import { z } from "zod";
-import { usePort } from "@maxdev1/sotajs-patched";
+import { usePort } from "@maxdev1/sotajs";
+
+import { messageSentOutPort } from "./chat.application.ports";
+import { Message } from "./domain/message.entity";
 import {
 	findChatByIdPort,
 	findPersonaByIdPort,
 	saveMessagePort,
-} from "./chat.domain.ports";
-import { messageSentOutPort } from "./chat.application.ports";
-import { Message } from "./message.entity";
+} from "./domain/chat.domain.ports";
 
 // Zod schema for input validation
 const SendMessageInputSchema = z.object({
@@ -14,8 +15,6 @@ const SendMessageInputSchema = z.object({
 	senderId: z.string().min(1),
 	content: z.string().min(1),
 });
-
-type SendMessageInput = z.infer<typeof SendMessageInputSchema>;
 
 export const sendMessageUseCase = async (input: unknown) => {
 	// 1. Validate input at the boundary of the use case

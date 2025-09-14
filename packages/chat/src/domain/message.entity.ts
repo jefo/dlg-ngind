@@ -1,4 +1,4 @@
-import { createEntity } from "@maxdev1/sotajs-patched/lib/entity";
+import { createEntity } from "@maxdev1/sotajs";
 import { z } from "zod";
 
 // Message Entity

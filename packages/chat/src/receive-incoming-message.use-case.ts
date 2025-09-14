@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { usePort } from "@maxdev1/sotajs-patched";
+import { usePort } from "@maxdev1/sotajs";
 import { findChatByIdPort, findPersonaByIdPort } from "./chat.domain.ports";
 import { createChatUseCase } from "./create-chat.use-case";
 import { createPersonaUseCase } from "./create-persona.use-case";

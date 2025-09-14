@@ -154,7 +154,7 @@ export const createOrderUseCase = async (input: CreateOrderInput): Promise<void>
   try {
     const order = Order.create(command);
     await saveOrder(order);
-    
+
     await orderCreated({ orderId: order.id, total: order.state.items.reduce((sum, i) => sum + i.price, 0) });
   } catch (error: any) {
     await orderFailed({ userId: command.userId, reason: error.message });

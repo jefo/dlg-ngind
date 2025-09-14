@@ -39,7 +39,7 @@ export async function runTelegramAdapter(
 	console.log("Running Telegram Adapter...");
 	let offset = 0;
 	while (true) {
-		try {
+		try {1
 			const updates = await getTelegramUpdates(offset);
 			for (const update of updates) {
 				offset = update.update_id + 1;

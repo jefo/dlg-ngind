@@ -1,4 +1,4 @@
-import { createEntity } from "@maxdev1/sotajs/lib/entity";
+import { createEntity } from "@maxdev1/sotajs";
 import { z } from "zod";
 
 // Persona Entity

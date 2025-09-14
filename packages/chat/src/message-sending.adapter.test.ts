@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, jest } from 'bun:test';
-import { resetDI, setPortAdapter } from '@maxdev1/sotajs/lib/di.v2';
+import { resetDI, setPortAdapter } from '@maxdev1/sotajs';
 import { messageSentOutPort } from './index';
 import * as TelegramApiClient from './telegram-api.client';
 
