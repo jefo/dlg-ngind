@@ -13,7 +13,7 @@ export const PersonaEntity = createEntity({
 	schema: PersonaSchema,
 	actions: {
 		rename: (state: PersonaProps, newName: string) => {
-			return { ...state, name: newName };
+			state.name = newName;
 		},
 	},
 });

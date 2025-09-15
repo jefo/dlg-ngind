@@ -31,9 +31,8 @@ export type ServiceLifecycleInput = z.infer<typeof ServiceLifecycleInputSchema>;
 
 // === Driven Ports (called by the application core) ===
 
-// TODO: fix syntax errors
-export const startListeningPort = createPort<(input: ServiceLifecycleInput) => Promise<void>>("startListening");
-export const stopListeningPort = createPort<(input: Pick<ServiceLifecycleInput, 'channel'>> => Promise<void>>("stopListening");
+export const startListeningPort = createPort<(input: ServiceLifecycleInput) => Promise<void>>();
+export const stopListeningPort = createPort<(input: Pick<ServiceLifecycleInput, 'channel'>) => Promise<void>>();
 
 
 // === Output Ports (for reporting results) ===
@@ -41,6 +40,6 @@ export const stopListeningPort = createPort<(input: Pick<ServiceLifecycleInput, 
 export const messageSentOutPort =
 	createPort<(dto: MessageSentOutput) => Promise<void>>();
 
-export const serviceStartedOutPort = createPort<(dto: { channel: string }) => Promise<void>>("serviceStarted");
-export const serviceStartFailedOutPort = createPort<(dto: { channel: string, reason: string }) => Promise<void>>("serviceStartFailed");
-export const serviceStoppedOutPort = createPort<(dto: { channel:string }) => Promise<void>>("serviceStopped");
+export const serviceStartedOutPort = createPort<(dto: { channel: string }) => Promise<void>>();
+export const serviceStartFailedOutPort = createPort<(dto: { channel: string, reason: string }) => Promise<void>>();
+export const serviceStoppedOutPort = createPort<(dto: { channel:string }) => Promise<void>>();

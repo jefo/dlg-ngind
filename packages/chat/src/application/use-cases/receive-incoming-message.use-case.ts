@@ -1,10 +1,13 @@
 import { z } from "zod";
 import { usePort } from "@maxdev1/sotajs";
+import {
+	findChatByIdPort,
+	findPersonaByIdPort,
+	saveChatPort,
+} from "../../domain/chat.domain.ports";
 import { createChatUseCase } from "./create-chat.use-case";
 import { createPersonaUseCase } from "./create-persona.use-case";
 import { sendMessageUseCase } from "./send-message.use-case";
-import { randomUUID } from "crypto";
-import { findChatByIdPort, findPersonaByIdPort } from "../../domain";
 
 // DTO для входящего сообщения, не зависящий от платформы
 const ReceiveMessageInputSchema = z.object({
@@ -13,8 +16,6 @@ const ReceiveMessageInputSchema = z.object({
 	personaName: z.string(),
 	text: z.string(),
 });
-
-type ReceiveMessageInput = z.infer<typeof ReceiveMessageInputSchema>;
 
 /**
  * Оркестрирующий Use Case.
@@ -26,8 +27,9 @@ export const receiveIncomingMessageUseCase = async (input: unknown) => {
 
 	const findPersona = usePort(findPersonaByIdPort);
 	const findChat = usePort(findChatByIdPort);
+	const saveChat = usePort(saveChatPort);
 
-	// 1. Убедимся, что Персона и Чат существуют
+	// 1. Убедимся, что Персона существует, или создадим ее
 	let persona = await findPersona(validInput.personaId);
 	if (!persona) {
 		console.log(
@@ -39,6 +41,7 @@ export const receiveIncomingMessageUseCase = async (input: unknown) => {
 		});
 	}
 
+	// 2. Убедимся, что Чат существует, или создадим его
 	let chat = await findChat(validInput.chatId);
 	if (!chat) {
 		console.log(`[Core]: Chat ${validInput.chatId} not found. Creating...`);
@@ -47,9 +50,20 @@ export const receiveIncomingMessageUseCase = async (input: unknown) => {
 			title: "Telegram Chat", // Можно будет передавать из адаптера
 			participantIds: [validInput.personaId],
 		});
+		// Перезагружаем чат, чтобы иметь его в переменной
+		chat = await findChat(validInput.chatId);
+	} else {
+		// 3. Если чат существует, убедимся, что отправитель является его участником
+		if (chat && !chat.state.participantIds.includes(validInput.personaId)) {
+			console.log(
+				`[Core]: Adding persona ${validInput.personaId} to chat ${validInput.chatId}`,
+			);
+			chat.actions.addParticipant(validInput.personaId);
+			await saveChat(chat); // Сохраняем тот же объект, так как он был мутирован
+		}
 	}
 
-	// 2. Передаем управление основному use case для отправки сообщения
+	// 4. Передаем управление основному use case для отправки сообщения
 	return await sendMessageUseCase({
 		chatId: validInput.chatId,
 		senderId: validInput.personaId,

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { usePort } from "@maxdev1/sotajs";
 
-import { messageSentOutPort } from "./chat.application.ports";
+import { messageSentOutPort } from "../chat.application.ports";
 import { Message } from "../../domain/message.entity";
 import {
 	findChatByIdPort,

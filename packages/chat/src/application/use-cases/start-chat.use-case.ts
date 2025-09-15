@@ -1,11 +1,10 @@
-import { z } from "zod";
 import { usePort } from "@maxdev1/sotajs";
 import {
 	ServiceLifecycleInputSchema,
 	startListeningPort,
 	serviceStartedOutPort,
 	serviceStartFailedOutPort,
-} from "./chat.application.ports";
+} from "../chat.application.ports";
 
 export const startChatServiceUseCase = async (input: unknown) => {
 	try {
@@ -17,7 +16,6 @@ export const startChatServiceUseCase = async (input: unknown) => {
 		await startListening(validInput);
 
 		await serviceStarted({ channel: validInput.channel });
-
 	} catch (error: any) {
 		const serviceStartFailed = usePort(serviceStartFailedOutPort);
 		// We might not have the channel if parsing fails, so we handle that.

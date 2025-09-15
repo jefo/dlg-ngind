@@ -12,25 +12,19 @@ const ChatSchema = z.object({
 type ChatProps = z.infer<typeof ChatSchema>;
 
 export const ChatEntity = createEntity({
+	name: "Chat",
 	schema: ChatSchema,
 	actions: {
 		addParticipant: (state: ChatProps, personaId: string) => {
 			if (!state.participantIds.includes(personaId)) {
-				return {
-					...state,
-					participantIds: [...state.participantIds, personaId],
-				};
+				state.participantIds.push(personaId);
 			}
-			return state;
 		},
 		removeParticipant: (state: ChatProps, personaId: string) => {
-			return {
-				...state,
-				participantIds: state.participantIds.filter((id) => id !== personaId),
-			};
+			state.participantIds = state.participantIds.filter((id) => id !== personaId);
 		},
 		rename: (state: ChatProps, newTitle: string) => {
-			return { ...state, title: newTitle };
+			state.title = newTitle;
 		},
 	},
 });
