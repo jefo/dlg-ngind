@@ -1,6 +1,6 @@
 import { describe, test, expect } from "bun:test";
 import { createPersonaUseCase } from "./create-persona.use-case";
-import { PersonaEntity } from "./persona.entity";
+import { PersonaEntity } from "../../domain";
 
 describe("createPersonaUseCase", () => {
 	test("should validate input correctly", async () => {

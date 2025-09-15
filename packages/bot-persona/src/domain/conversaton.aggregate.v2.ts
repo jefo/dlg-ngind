@@ -1,9 +1,9 @@
-import type { FSM } from "../bot-persona/fsm.vo";
-import { createRuntimeEntity } from "../runtime-entity.factory";
+import type { FSM } from "./fsm.vo";
+import { createRuntimeEntity } from "./runtime-entity.factory";
 import type {
 	IEntityDescriptor,
 	InstanceTypeFromDescriptor,
-} from "../runtime-entity.factory";
+} from "./runtime-entity.factory";
 
 export const createConversation = <const TDescriptor extends IEntityDescriptor>(
 	formDescriptor: TDescriptor,

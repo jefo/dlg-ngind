@@ -1,10 +1,10 @@
 import { z } from "zod";
 import { usePort } from "@maxdev1/sotajs";
-import { findChatByIdPort, findPersonaByIdPort } from "./chat.domain.ports";
 import { createChatUseCase } from "./create-chat.use-case";
 import { createPersonaUseCase } from "./create-persona.use-case";
 import { sendMessageUseCase } from "./send-message.use-case";
 import { randomUUID } from "crypto";
+import { findChatByIdPort, findPersonaByIdPort } from "../../domain";
 
 // DTO для входящего сообщения, не зависящий от платформы
 const ReceiveMessageInputSchema = z.object({

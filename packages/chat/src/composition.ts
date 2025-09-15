@@ -1,15 +1,6 @@
 import { setPortAdapter, resetDI } from "@maxdev1/sotajs";
 
-// Import all ports
-import {
-	findPersonaByIdPort,
-	savePersonaPort,
-	findChatByIdPort,
-	saveChatPort,
-	saveMessagePort,
-} from "./chat.domain.ports";
-
-import { messageSentOutPort } from "./chat.application.ports";
+import { messageSentOutPort } from "./application/use-cases/chat.application.ports";
 
 // Import all adapters
 import {
@@ -19,6 +10,13 @@ import {
 	inMemoryFindChatByIdAdapter,
 	inMemorySaveMessageAdapter,
 } from "./infrastructure/persistence/in-memory.adapters";
+import {
+	findChatByIdPort,
+	findPersonaByIdPort,
+	saveChatPort,
+	saveMessagePort,
+	savePersonaPort,
+} from "./domain/chat.domain.ports";
 
 /**
  * Function to set up all chat package ports with their implementations (adapters).

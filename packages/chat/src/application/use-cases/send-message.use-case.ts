@@ -2,12 +2,12 @@ import { z } from "zod";
 import { usePort } from "@maxdev1/sotajs";
 
 import { messageSentOutPort } from "./chat.application.ports";
-import { Message } from "./domain/message.entity";
+import { Message } from "../../domain/message.entity";
 import {
 	findChatByIdPort,
 	findPersonaByIdPort,
 	saveMessagePort,
-} from "./domain/chat.domain.ports";
+} from "../../domain/chat.domain.ports";
 
 // Zod schema for input validation
 const SendMessageInputSchema = z.object({

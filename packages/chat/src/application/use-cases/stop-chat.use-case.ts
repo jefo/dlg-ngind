@@ -1,10 +1,6 @@
 import { z } from "zod";
 import { usePort } from "@maxdev1/sotajs";
-import {
-	ServiceLifecycleInputSchema,
-	stopListeningPort,
-	serviceStoppedOutPort,
-} from "./chat.application.ports";
+import { ServiceLifecycleInputSchema, serviceStoppedOutPort, stopListeningPort } from "../chat.application.ports";
 
 // For stopping, we only need the channel, not the full config.
 const StopServiceInputSchema = ServiceLifecycleInputSchema.pick({ channel: true });

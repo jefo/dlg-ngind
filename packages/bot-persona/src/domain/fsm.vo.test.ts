@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { FSM, type FsmDefinition } from "../fsm.vo";
+import { FSM, type FsmDefinition } from "./fsm.vo";
 
 describe("FSM (Finite State Machine)", () => {
   const validFsmDefinition: FsmDefinition = {

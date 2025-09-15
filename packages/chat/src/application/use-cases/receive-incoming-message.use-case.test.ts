@@ -1,23 +1,24 @@
 import { beforeEach, describe, expect, it, jest } from "bun:test";
 import { resetDI, setPortAdapter } from "@maxdev1/sotajs";
-import { randomUUID } from "crypto";
 import {
-	Chat,
-	Persona,
-	createChatUseCase,
-	createPersonaUseCase,
 	findChatByIdPort,
+	type ChatEntityType,
+	type PersonaEntityType,
+} from "../../domain";
+import {
 	findPersonaByIdPort,
-	messageSentOutPort,
-	receiveIncomingMessageUseCase,
 	saveChatPort,
 	saveMessagePort,
 	savePersonaPort,
-} from "./index";
+} from "chat";
+import { messageSentOutPort } from "../chat.application.ports";
+import { receiveIncomingMessageUseCase } from "./receive-incoming-message.use-case";
+import { createPersonaUseCase } from "./create-persona.use-case";
+import { createChatUseCase } from "./create-chat.use-case";
 
 // --- Mocks & Spies ---
-const memoryPersonas = new Map<string, InstanceType<typeof Persona>>();
-const memoryChats = new Map<string, InstanceType<typeof Chat>>();
+const memoryPersonas = new Map<string, PersonaEntityType>();
+const memoryChats = new Map<string, ChatEntityType>();
 
 const mockSavePersonaPort = jest.fn(async (p) => {
 	memoryPersonas.set(p.id, p);

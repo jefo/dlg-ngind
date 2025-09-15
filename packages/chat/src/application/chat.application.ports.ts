@@ -31,6 +31,7 @@ export type ServiceLifecycleInput = z.infer<typeof ServiceLifecycleInputSchema>;
 
 // === Driven Ports (called by the application core) ===
 
+// TODO: fix syntax errors
 export const startListeningPort = createPort<(input: ServiceLifecycleInput) => Promise<void>>("startListening");
 export const stopListeningPort = createPort<(input: Pick<ServiceLifecycleInput, 'channel'>> => Promise<void>>("stopListening");
 

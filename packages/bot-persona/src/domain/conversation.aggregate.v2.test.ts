@@ -1,6 +1,6 @@
 import { describe, it, expect } from "bun:test";
-import { createConversation } from "../conversaton.aggregate.v2";
-import { FSM } from "../../bot-persona/fsm.vo";
+import { createConversation } from "./conversaton.aggregate.v2";
+import { FSM } from "./fsm.vo";
 
 // 1. Обновленный дескриптор, соответствующий IEntityDescriptor
 const formDescriptor = {
@@ -54,12 +54,13 @@ describe("Conversation Aggregate V2", () => {
 		});
 
 		// Эта операция должна пройти успешно
-		conversation.form.age = 25;
+		conversation.form.set("age", 25);
 		expect(conversation.form.age).toBe(25);
 
 		// Эта операция должна выбросить ошибку из-за guard'а
 		expect(() => {
-			conversation.form.age = 17;
+			// TODO
+			conversation.form.set("age", 17);
 		}).toThrow("Age must be 18 or older.");
 	});
 
