@@ -4,11 +4,8 @@ import {
 	FormDefinitionSchema,
 	FsmDefinitionSchema,
 	ViewDefinitionSchema,
-} from "../../desing/domain";
-import type {
-	FsmDefinition,
-	ViewDefinition,
-	FormDefinition,
+	FormEntity,
+	FormEntitySchema,
 } from "../../desing/domain";
 
 // --- Схема состояния и типы ---
@@ -18,14 +15,14 @@ const ConversationStateSchema = z.object({
 	botPersonaId: z.string().uuid(),
 	chatId: z.string(),
 	status: z.enum(["active", "finished", "cancelled"]),
-
 	currentStateId: z.string(),
-	formState: z.record(z.string(), z.any()), // Простое хранилище для собранных данных
+
+	// Вся форма целиком является частью состояния диалога
+	form: FormEntitySchema,
 
 	// Копии "чертежей" для автономной работы
 	fsmDefinition: FsmDefinitionSchema,
 	viewDefinition: ViewDefinitionSchema,
-	formDefinition: FormDefinitionSchema,
 
 	createdAt: z.date(),
 	updatedAt: z.date(),
@@ -40,45 +37,45 @@ export const Conversation = createAggregate({
 	schema: ConversationStateSchema,
 	invariants: [],
 
+	// Указываем, что `form` - это вложенная сущность
+	entities: {
+		form: FormEntity,
+	},
+
 	computed: {
 		isActive: (state) => state.status === "active",
 		isFinished: (state) => state.status === "finished",
-
-		/**
-		 * Находит узел представления для текущего состояния и разрешает
-		 * его props, подставляя значения из formState.
-		 */
 		currentView: (state) => {
 			const viewNode = state.viewDefinition.nodes.find(
 				(n) => n.id === state.currentStateId,
 			);
-
-			if (!viewNode) {
-				// Этого не должно произойти, если BotPersona прошел валидацию
-				return null;
-			}
+			if (!viewNode) return null;
 
 			const resolvedProps: Record<string, any> = {};
+			const formState = state.form.state.formState; // Получаем доступ к состоянию формы
+
 			for (const key in viewNode.props) {
 				const propValue = viewNode.props[key];
 				if (typeof propValue === "string" && propValue.startsWith("context.")) {
 					const contextKey = propValue.substring("context.".length);
-					resolvedProps[key] = state.formState[contextKey];
+					// Ищем значение в `formState` по ID поля, а не по имени
+					const field = state.form.state.definition.fields.find(
+						(f) => f.name === contextKey,
+					);
+					if (field) {
+						resolvedProps[key] = formState[field.id]?.value;
+					}
 				} else {
 					resolvedProps[key] = propValue;
 				}
 			}
-
 			return { ...viewNode, props: resolvedProps };
 		},
 	},
 
 	actions: {
-		/**
-		 * Главный метод, двигающий диалог вперед.
-		 */
 		applyEvent: (
-			state: ConversationState,
+			state,
 			{ event, payload }: { event: string; payload?: Record<string, any> },
 		) => {
 			if (state.status !== "active") {
@@ -90,36 +87,43 @@ export const Conversation = createAggregate({
 			);
 
 			if (!transition) {
-				// В будущем здесь можно будет вызвать output port `invalidInput`
 				throw new Error(
 					`Invalid event '${event}' for state '${state.currentStateId}'.`,
 				);
 			}
 
-			// 1. Обновляем состояние формы согласно правилам `assign`
 			if (transition.assign) {
-				for (const [formKey, payloadExpr] of Object.entries(
+				for (const [fieldName, payloadExpr] of Object.entries(
 					transition.assign,
 				)) {
+					const field = state.form.state.definition.fields.find(
+						(f) => f.name === fieldName,
+					);
+					if (!field) continue; // Пропускаем, если поле не найдено в определении
+
+					let valueToSet: any;
 					if (
 						typeof payloadExpr === "string" &&
 						payloadExpr.startsWith("payload.")
 					) {
 						const payloadKey = payloadExpr.substring("payload.".length);
 						if (payload && payloadKey in payload) {
-							state.formState[formKey] = payload[payloadKey];
+							valueToSet = payload[payloadKey];
 						}
 					} else {
-						// Прямое присваивание литерала
-						state.formState[formKey] = payloadExpr;
+						valueToSet = payloadExpr;
 					}
+
+					// Делегируем установку значения и валидацию сущности Form
+					state.form.actions.setFieldValue({
+						fieldId: field.id,
+						value: valueToSet,
+					});
 				}
 			}
 
-			// 2. Обновляем текущее состояние FSM
 			state.currentStateId = transition.to;
 
-			// 3. Проверяем, не стало ли новое состояние финальным
 			const isFinal = !state.fsmDefinition.transitions.some(
 				(t) => t.from === state.currentStateId,
 			);
@@ -131,7 +135,7 @@ export const Conversation = createAggregate({
 			state.updatedAt = new Date();
 		},
 
-		finish: (state: ConversationState) => {
+		finish: (state) => {
 			state.status = "finished";
 			state.updatedAt = new Date();
 		},
