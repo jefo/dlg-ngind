@@ -9,6 +9,7 @@ export * from "./src/domain";
 export * from "./src/application/use-cases/start-conversation.use-case";
 export * from "./src/application/use-cases/process-user-input.use-case";
 export * from "./src/application/use-cases/define-bot-persona.use-case";
+export * from "./src/application/use-cases/define-bot-persona-with-schema.use-case";
 export * from "./src/application/use-cases/define-conversation-model.use-case";
 
 // Export ports

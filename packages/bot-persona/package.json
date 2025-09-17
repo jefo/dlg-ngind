@@ -9,7 +9,7 @@
     "typescript": "^5.9.2"
   },
   "dependencies": {
-    "@maxdev1/sotajs": "^0.0.7",
+    "@maxdev1/sotajs": "^0.2.0",
     "ajv": "^8.17.1"
   }
 }
