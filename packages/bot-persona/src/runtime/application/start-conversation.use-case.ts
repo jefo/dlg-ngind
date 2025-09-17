@@ -1,7 +1,9 @@
 import { usePort } from "@maxdev1/sotajs";
 import { z } from "zod";
 import { randomUUID } from "crypto";
-import { findBotPersonaByIdPort } from "../../desing/domain/bot-persona.aggregate";
+import {
+	findBotPersonaByIdPort,
+} from "../../desing/domain/bot-persona.aggregate";
 import {
 	Conversation,
 	findActiveConversationByChatIdPort,
@@ -9,13 +11,14 @@ import {
 } from "../domain/conversaton.aggregate";
 import { componentRenderOutPort } from "./ports";
 import { operationFailedOutPort } from "../../desing/application/ports";
+import { createFormFromDefinition } from "../../desing/domain";
 
 // --- Входной DTO и его схема ---
 
 const StartConversationInputSchema = z.object({
 	botPersonaId: z.string().uuid(),
 	chatId: z.string(),
-	initialContext: z.record(z.string(), z.any()).optional(),
+	initialContext: z.record(z.any()).optional(),
 });
 
 type StartConversationInput = z.infer<typeof StartConversationInputSchema>;
@@ -26,7 +29,6 @@ type StartConversationInput = z.infer<typeof StartConversationInputSchema>;
 export async function startConversationUseCase(
 	input: StartConversationInput,
 ): Promise<void> {
-	// 1. Валидация входных данных
 	const validationResult = StartConversationInputSchema.safeParse(input);
 	const operationFailed = usePort(operationFailedOutPort);
 
@@ -41,7 +43,6 @@ export async function startConversationUseCase(
 
 	const { botPersonaId, chatId, initialContext } = validationResult.data;
 
-	// 2. Получение зависимостей через порты
 	const findBotPersonaById = usePort(findBotPersonaByIdPort);
 	const findActiveConversationByChatId = usePort(
 		findActiveConversationByChatIdPort,
@@ -50,41 +51,40 @@ export async function startConversationUseCase(
 	const componentRender = usePort(componentRenderOutPort);
 
 	try {
-		// 3. Проверяем, нет ли уже активного диалога
 		const existingConversation = await findActiveConversationByChatId(chatId);
 		if (existingConversation) {
-			throw new Error(
-				`An active conversation already exists for chatId ${chatId}.`,
-			);
+			throw new Error(`An active conversation already exists for chatId ${chatId}.`);
 		}
 
-		// 4. Загружаем "личность" бота
 		const persona = await findBotPersonaById(botPersonaId);
 		if (!persona) {
 			throw new Error(`BotPersona with id ${botPersonaId} not found.`);
 		}
 
-		// 5. Создаем новый агрегат Conversation
 		const now = new Date();
+
+		// 1. Создаем инстанс FormEntity
+		const form = createFormFromDefinition(
+			persona.state.formDefinition,
+			randomUUID(),
+		);
+
+		// 2. Создаем агрегат Conversation, передавая в него состояние формы
 		const conversation = Conversation.create({
 			id: randomUUID(),
 			botPersonaId,
 			chatId,
 			status: "active",
 			currentStateId: persona.state.fsmDefinition.initialStateId,
-			formState: initialContext ?? {},
-			// Копируем "чертежи" в инстанс диалога
+			form: form.state, // Передаем состояние FormEntity
 			fsmDefinition: persona.state.fsmDefinition,
 			viewDefinition: persona.state.viewDefinition,
-			formDefinition: persona.state.formDefinition,
 			createdAt: now,
 			updatedAt: now,
 		});
 
-		// 6. Сохраняем новый диалог
 		await saveConversation(conversation.state);
 
-		// 7. Отправляем пользователю первое сообщение
 		const initialView = conversation.currentView;
 		if (initialView) {
 			await componentRender({

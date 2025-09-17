@@ -51,22 +51,27 @@ export const Conversation = createAggregate({
 			);
 			if (!viewNode) return null;
 
-			const resolvedProps: Record<string, any> = {};
-			const formState = state.form.state.formState; // Получаем доступ к состоянию формы
+			const resolvedProps: Record<string, any> = { ...viewNode.props };
+			const formState = state.form.state.formState;
 
-			for (const key in viewNode.props) {
-				const propValue = viewNode.props[key];
-				if (typeof propValue === "string" && propValue.startsWith("context.")) {
-					const contextKey = propValue.substring("context.".length);
-					// Ищем значение в `formState` по ID поля, а не по имени
-					const field = state.form.state.definition.fields.find(
-						(f) => f.name === contextKey,
-					);
-					if (field) {
-						resolvedProps[key] = formState[field.id]?.value;
+			for (const key in resolvedProps) {
+				const propValue = resolvedProps[key];
+				if (typeof propValue === "string" && propValue.includes("context.")) {
+					// Ищем все вхождения context.fieldName в строке
+					const matches = propValue.match(/context\.[\w_]+/g) || [];
+					for (const match of matches) {
+						const contextKey = match.substring("context.".length);
+						const field = state.form.state.definition.fields.find(
+							(f) => f.name === contextKey,
+						);
+						if (field && formState[field.id]?.value) {
+							// Заменяем шаблон на реальное значение
+							resolvedProps[key] = resolvedProps[key].replace(
+								match,
+								state.form.state.formState[field.id]?.value,
+							);
+						}
 					}
-				} else {
-					resolvedProps[key] = propValue;
 				}
 			}
 			return { ...viewNode, props: resolvedProps };
@@ -99,7 +104,7 @@ export const Conversation = createAggregate({
 					const field = state.form.state.definition.fields.find(
 						(f) => f.name === fieldName,
 					);
-					if (!field) continue; // Пропускаем, если поле не найдено в определении
+					if (!field) continue;
 
 					let valueToSet: any;
 					if (
@@ -114,7 +119,6 @@ export const Conversation = createAggregate({
 						valueToSet = payloadExpr;
 					}
 
-					// Делегируем установку значения и валидацию сущности Form
 					state.form.actions.setFieldValue({
 						fieldId: field.id,
 						value: valueToSet,

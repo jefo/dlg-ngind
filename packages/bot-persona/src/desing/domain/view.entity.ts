@@ -6,7 +6,7 @@ import { createEntity } from "@maxdev1/sotajs";
 export const ComponentDescriptorSchema = z.object({
 	id: z.string(), // ID состояния FSM, которому соответствует этот узел
 	component: z.string(), // Имя UI-компонента
-	props: z.record(z.any()).optional(), // Свойства для компонента
+	props: z.record(z.string(), z.any()).optional(), // Свойства для компонента
 });
 
 /**

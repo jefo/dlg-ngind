@@ -140,7 +140,6 @@ function validateFieldValue(
 
 export const FormEntity = createEntity({
 	schema: FormEntitySchema,
-	invariants: [],
 	actions: {
 		setFieldValue: (
 			state: FormEntityState,

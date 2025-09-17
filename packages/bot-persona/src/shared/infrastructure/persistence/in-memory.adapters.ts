@@ -1,45 +1,40 @@
-import type { BotPersonaType } from "../../domain/bot-persona/bot-persona.aggregate";
-import type { ConversationType } from "../../domain/conversation/conversation.aggregate";
-
-// Эмуляция таблиц в базе данных
-export const botPersonas = new Map<string, BotPersonaType>();
-export const conversations = new Map<string, ConversationType>();
+import { BotPersona } from "../../../desing/domain";
+import type { BotPersonaProps } from "../../../desing/domain";
+import { Conversation } from "../../../runtime/domain";
+import type { ConversationState } from "../../../runtime/domain";
+import { botPersonas, conversations } from "./db"; // Импортируем хранилища
 
 // --- Адаптеры для BotPersona ---
 
-export const inMemorySaveBotPersonaAdapter = async (
-	persona: BotPersonaType,
+export const inMemorySaveBotPersonaAdapter = (
+	props: BotPersonaProps,
 ): Promise<void> => {
-	botPersonas.set(persona.state.id, persona);
+	botPersonas.set(props.id, props);
+	return Promise.resolve();
 };
 
 export const inMemoryFindBotPersonaByIdAdapter = async (
 	id: string,
-): Promise<BotPersonaType | null> => {
-	return botPersonas.get(id) ?? null;
-};
-
-// Адаптер для тестов - возвращает все botPersonas
-export const inMemoryFindAllBotPersonasAdapter = async (): Promise<
-	Map<string, BotPersonaType>
-> => {
-	return botPersonas;
+): Promise<BotPersona | null> => {
+	const props = botPersonas.get(id);
+	return props ? BotPersona.create(props) : null;
 };
 
 // --- Адаптеры для Conversation ---
 
-export const inMemorySaveConversationAdapter = async (
-	conversation: ConversationType,
+export const inMemorySaveConversationAdapter = (
+	props: ConversationState,
 ): Promise<void> => {
-	conversations.set(conversation.state.id, conversation);
+	conversations.set(props.id, props);
+	return Promise.resolve();
 };
 
 export const inMemoryFindActiveConversationByChatIdAdapter = async (
 	chatId: string,
-): Promise<ConversationType | null> => {
-	for (const conv of conversations.values()) {
-		if (conv.state.chatId === chatId && conv.state.status === "active") {
-			return conv;
+): Promise<Conversation | null> => {
+	for (const props of conversations.values()) {
+		if (props.chatId === chatId && props.status === "active") {
+			return Conversation.create(props);
 		}
 	}
 	return null;

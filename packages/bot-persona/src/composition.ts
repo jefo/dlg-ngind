@@ -1,15 +1,39 @@
 import { setPortAdapter, resetDI } from "@maxdev1/sotajs";
 
-// Импорт всех портов
-import * as AppPorts from "./application/ports";
-import * as DomainPorts from "./domain/ports";
+// --- Импорт всех портов ---
+// Design
+import {
+	findBotPersonaByIdPort,
+	saveBotPersonaPort,
+} from "./desing/domain/bot-persona.aggregate";
+import {
+	botPersonaDefinedOutPort,
+	operationFailedOutPort,
+} from "./desing/application/ports";
 
-// Импорт всех адаптеров
-import * as Persistence from "./infrastructure/persistence/in-memory.adapters";
-import * as Presenters from "./infrastructure/presenters/console.presenters";
+// Runtime
+import {
+	findActiveConversationByChatIdPort,
+	saveConversationPort,
+} from "./runtime/domain/conversaton.aggregate";
+import {
+	componentRenderOutPort,
+	conversationFinishedOutPort,
+	conversationNotFoundOutPort,
+	invalidInputOutPort,
+} from "./runtime/application/ports";
 
-// Экспортируем адаптер для тестов
-export { inMemoryFindAllBotPersonasAdapter } from "./infrastructure/persistence/in-memory.adapters";
+// --- Импорт всех адаптеров ---
+import {
+	inMemoryFindActiveConversationByChatIdAdapter,
+	inMemoryFindBotPersonaByIdAdapter,
+	inMemorySaveBotPersonaAdapter,
+	inMemorySaveConversationAdapter,
+} from "./shared/infrastructure/persistence/in-memory.adapters";
+import {
+	consoleComponentRenderAdapter,
+	consoleFailurePresenter,
+} from "./shared/infrastructure/presenters/console.presenters";
 
 /**
  * Функция для связывания всех портов с их реализациями (адаптерами).
@@ -21,51 +45,30 @@ export function composeApp() {
 
 	// --- Связывание портов данных ---
 	setPortAdapter(
-		DomainPorts.saveBotPersonaPort,
-		Persistence.inMemorySaveBotPersonaAdapter,
+		findBotPersonaByIdPort,
+		inMemoryFindBotPersonaByIdAdapter,
 	);
+	setPortAdapter(saveBotPersonaPort, inMemorySaveBotPersonaAdapter);
 	setPortAdapter(
-		DomainPorts.findBotPersonaByIdPort,
-		Persistence.inMemoryFindBotPersonaByIdAdapter,
+		findActiveConversationByChatIdPort,
+		inMemoryFindActiveConversationByChatIdAdapter,
 	);
-	setPortAdapter(
-		DomainPorts.saveConversationPort,
-		Persistence.inMemorySaveConversationAdapter,
-	);
-	setPortAdapter(
-		DomainPorts.findActiveConversationByChatIdPort,
-		Persistence.inMemoryFindActiveConversationByChatIdAdapter,
-	);
-	setPortAdapter(
-		DomainPorts.saveConversationModelPort,
-		Persistence.inMemorySaveConversationAdapter,
-	);
-	setPortAdapter(
-		DomainPorts.findConversationModelByIdPort,
-		Persistence.inMemoryFindActiveConversationByChatIdAdapter,
-	);
+	setPortAdapter(saveConversationPort, inMemorySaveConversationAdapter);
 
 	// --- Связывание выходных портов ---
-	setPortAdapter(
-		AppPorts.componentRenderOutPort,
-		Presenters.consoleComponentRenderAdapter,
-	);
-	setPortAdapter(
-		AppPorts.operationFailedOutPort,
-		Presenters.consoleFailurePresenter,
-	);
+	setPortAdapter(operationFailedOutPort, consoleFailurePresenter);
+	setPortAdapter(conversationNotFoundOutPort, consoleFailurePresenter);
+	setPortAdapter(invalidInputOutPort, consoleFailurePresenter);
 
-	// Связываем остальные порты с тем же обработчиком ошибок для простоты
-	setPortAdapter(AppPorts.conversationFinishedOutPort, (dto) => {
-		console.log(`--- Conversation Finished for chat: ${dto.chatId} ---`);
-		return Promise.resolve();
+	setPortAdapter(componentRenderOutPort, consoleComponentRenderAdapter);
+
+	// Для портов, у которых пока нет сложного презентера, используем простой console.log
+	setPortAdapter(botPersonaDefinedOutPort, async (dto) => {
+		console.log(`✅ Bot Persona Defined: ${dto.name} (ID: ${dto.personaId})`);
 	});
-	setPortAdapter(
-		AppPorts.invalidInputOutPort,
-		Presenters.consoleFailurePresenter,
-	);
-	setPortAdapter(
-		AppPorts.conversationNotFoundOutPort,
-		Presenters.consoleFailurePresenter,
-	);
+	setPortAdapter(conversationFinishedOutPort, async (dto) => {
+		console.log(`🏁 Conversation Finished for chat: ${dto.chatId}`);
+	});
+
+	console.log("--- Application Composed ---");
 }
