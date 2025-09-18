@@ -1,6 +1,19 @@
+import { createPort, usePort } from "@maxdev1/sotajs";
 import type { ServiceLifecycleInput } from "../../application";
 import { receiveIncomingMessageUseCase } from "../../application/use-cases/receive-incoming-message.use-case";
 import { getTelegramUpdates } from "./telegram-api.client";
+
+// --- Выходной порт, который адаптер использует для связи с оркестратором ---
+
+export const userInteractedOutPort = createPort<(
+	interaction: {
+		chatId: string;
+		personaId: string;
+		event: string;
+		payload?: Record<string, any>;
+	}
+) => Promise<void>>();
+
 
 // The state of our adapter. It holds the running process.
 interface AdapterState {
@@ -8,34 +21,48 @@ interface AdapterState {
 	isRunning: boolean;
 }
 
-// We only support one running instance per adapter module.
 let state: AdapterState | null = null;
 
 /**
- * Transforms a raw Telegram update into our internal DTO.
+ * Transforms a raw Telegram update into our internal DTO and calls the correct use case or port.
  */
-function handleTelegramUpdate(update: any) {
-	const message = update.message;
-	if (!message || !message.text) return;
+async function handleTelegramUpdate(update: any) {
+	// 1. Обработка нажатия на инлайн-кнопку
+	if (update.callback_query) {
+		const { message, from, data } = update.callback_query;
+		try {
+			const { event, payload } = JSON.parse(data);
+			const interaction = {
+				chatId: `telegram:${message.chat.id}`,
+				personaId: `telegram:${from.id}`,
+				event,
+				payload,
+			};
+			console.log(`< [Adapter]: Received button click '${event}'. Routing to Orchestrator...`);
+			const userInteracted = usePort(userInteractedOutPort);
+			await userInteracted(interaction);
+		} catch (error) {
+			console.error("[Adapter]: Failed to parse callback_query data:", data, error);
+		}
+		return;
+	}
 
-	const payload = {
-		chatId: `telegram:${message.chat.id}`,
-		personaId: `telegram:${message.from.id}`,
-		personaName: message.from.first_name || "User",
-		text: message.text,
-	};
+	// 2. Обработка обычного текстового сообщения
+	if (update.message && update.message.text) {
+		const { message } = update;
+		const payload = {
+			chatId: `telegram:${message.chat.id}`,
+			personaId: `telegram:${message.from.id}`,
+			personaName: message.from.first_name || "User",
+			text: message.text,
+		};
 
-	console.log(
-		`< [Adapter]: Received message from ${message.from.first_name}. Routing to Core...`,
-	);
-
-	// The adapter acts as a "Driving Actor" and calls the application's use case.
-	receiveIncomingMessageUseCase(payload).catch((err) => {
-		console.error(
-			`[Adapter]: Error processing message for chat ${payload.chatId}:`,
-			err,
-		);
-	});
+		console.log(`< [Adapter]: Received text message. Routing to Core...`);
+		// Для текстовых сообщений мы по-прежнему можем вызывать старый use case
+		await receiveIncomingMessageUseCase(payload).catch((err) => {
+			console.error(`[Adapter]: Error processing text message for chat ${payload.chatId}:`, err);
+		});
+	}
 }
 
 /**

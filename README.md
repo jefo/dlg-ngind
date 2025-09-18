@@ -12,8 +12,9 @@ Implementing a lead qualification bot for our kwork custom bot development servi
 - `playbook.md` - Development roadmap
 - `ProcessUserInputUseCase.md` - Key use case documentation
 
-## New Bounded Context
+## New Bounded Contexts
 - `packages/booking` - Booking context for appointment scheduling
+- Future integration with `@packages/bot-persona` for complete booking bot solution
 
 ## Immediate Goal
 Create a lead qualification bot that will be linked from our kwork listing to qualify leads and drive them to book a free consultation.
@@ -27,4 +28,7 @@ Using existing `@packages/bot-persona` FSM engine - perfect fit for this linear 
 3. Deploy and link from kwork
 4. Collect qualified leads for consultation bookings
 
-This lean approach uses our existing technology perfectly suited for this use case while avoiding unnecessary complexity.
+## Future Vision
+Combine the existing bot-persona capabilities with the new booking context to create a complete booking bot solution that can be deployed across multiple platforms.
+
+This lean approach uses our existing technology perfectly suited for this use case while avoiding unnecessary complexity, with a clear path for future enhancement and integration.

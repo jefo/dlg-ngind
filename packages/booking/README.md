@@ -15,10 +15,10 @@ This context provides functionality for scheduling consultations between potenti
 
 ## Documentation
 
-- [API Documentation](./API.md) - Complete API reference for all use cases
-- [Quick Start Guide](./QUICK_START.md) - Getting started quickly with the booking context
-- [Integration Examples](./INTEGRATION.md) - Practical examples for bot and web integration
-- [Context Documentation](./CONTEXT.md) - Detailed domain model and architecture
+- [API Documentation](./docs/API.md) - Complete API reference for all use cases
+- [Quick Start Guide](./docs/QUICK_START.md) - Getting started quickly with the booking context
+- [Integration Examples](./docs/INTEGRATION.md) - Practical examples for bot and web integration
+- [Context Documentation](./docs/CONTEXT.md) - Detailed domain model and architecture
 - [E2E Demo](./e2e-booking-demo.ts) - Complete end-to-end demonstration
 
 ## Installation

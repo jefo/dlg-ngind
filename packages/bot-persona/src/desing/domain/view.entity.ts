@@ -1,17 +1,19 @@
 import { z } from "zod";
 import { createEntity } from "@maxdev1/sotajs";
+import { MessageSchema } from "./ui/message.entity";
+import { ButtonGroupSchema } from "./ui/button-group.entity";
 
 // --- Чистые определения и схемы для хранения и передачи данных (DTOs) ---
 
+// Узел отображения теперь может состоять из нескольких UI-компонентов
 export const ComponentDescriptorSchema = z.object({
 	id: z.string(), // ID состояния FSM, которому соответствует этот узел
-	component: z.string(), // Имя UI-компонента
-	props: z.record(z.string(), z.any()).optional(), // Свойства для компонента
+	components: z.array(z.union([MessageSchema, ButtonGroupSchema])),
 });
 
 /**
  * ViewDefinitionSchema - это "чертеж" представлений.
- * Он сопоставляет состояния FSM с UI-компонентами.
+ * Он сопоставляет состояния FSM с набором UI-компонентов.
  * Именно эта структура хранится внутри агрегата BotPersona.
  */
 export const ViewDefinitionSchema = z.object({
