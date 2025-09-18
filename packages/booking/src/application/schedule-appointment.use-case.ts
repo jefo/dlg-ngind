@@ -80,7 +80,11 @@ export const scheduleAppointmentUseCase = async (input: unknown): Promise<{ appo
   const appointment = Appointment.create({
     id: randomUUID(),
     clientId: client.state.id,
-    timeSlot: timeSlot.state,
+    timeSlotId: timeSlot.state.id, // Store the time slot ID
+    timeSlot: { // Store the time range
+      start: timeSlot.state.start,
+      end: timeSlot.state.end
+    },
     contactInfo: validInput.contactInfo,
     status: "scheduled",
     bookingReference,

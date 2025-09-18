@@ -113,7 +113,7 @@ async function runBookingE2ETest() {
     // 8. Cancel the appointment
     console.log("\n8️⃣  Cancelling the appointment...");
     console.log(`   Cancelling appointment ID: ${scheduleResult.appointmentId}`);
-    console.log(`   Time slot ID from appointment: ${createdAppointment?.state.timeSlot.id}`);
+    console.log(`   Time slot ID from appointment: ${createdAppointment?.state.timeSlotId}`);
     await cancelAppointmentUseCase({
       appointmentId: scheduleResult.appointmentId,
     });

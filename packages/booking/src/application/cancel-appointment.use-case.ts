@@ -46,7 +46,7 @@ export const cancelAppointmentUseCase = async (input: unknown): Promise<void> =>
   await saveAppointment(appointment);
   
   // 6. Release the time slot
-  const timeSlot = await findTimeSlotById(appointment.state.timeSlot.id);
+  const timeSlot = await findTimeSlotById(appointment.state.timeSlotId);
   if (timeSlot) {
     timeSlot.actions.release();
     await saveTimeSlot(timeSlot);

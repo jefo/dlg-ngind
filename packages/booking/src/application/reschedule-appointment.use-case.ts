@@ -51,10 +51,13 @@ export const rescheduleAppointmentUseCase = async (input: unknown): Promise<void
   }
   
   // 6. Find the old time slot to release it
-  const oldTimeSlot = await findTimeSlotById(appointment.state.timeSlot.id);
+  const oldTimeSlot = await findTimeSlotById(appointment.state.timeSlotId);
   
   // 7. Reschedule the appointment
-  appointment.actions.reschedule(newTimeSlot.state);
+  appointment.actions.reschedule({
+    start: newTimeSlot.state.start,
+    end: newTimeSlot.state.end
+  });
   await saveAppointment(appointment);
   
   // 8. Book the new time slot

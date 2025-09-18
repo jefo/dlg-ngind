@@ -21,6 +21,7 @@ describe("Appointment Aggregate", () => {
     const appointment = Appointment.create({
       id: randomUUID(),
       clientId: randomUUID(),
+      timeSlotId: randomUUID(), // Add the new required field
       timeSlot: validTimeSlot,
       contactInfo: validContactInfo,
       status: "scheduled",
@@ -40,6 +41,7 @@ describe("Appointment Aggregate", () => {
     const appointment = Appointment.create({
       id: randomUUID(),
       clientId: randomUUID(),
+      timeSlotId: randomUUID(), // Add the new required field
       timeSlot: validTimeSlot,
       contactInfo: validContactInfo,
       status: "scheduled",
@@ -59,6 +61,7 @@ describe("Appointment Aggregate", () => {
     const appointment = Appointment.create({
       id: randomUUID(),
       clientId: randomUUID(),
+      timeSlotId: randomUUID(), // Add the new required field
       timeSlot: validTimeSlot,
       contactInfo: validContactInfo,
       status: "scheduled",
@@ -78,6 +81,7 @@ describe("Appointment Aggregate", () => {
     const appointment = Appointment.create({
       id: randomUUID(),
       clientId: randomUUID(),
+      timeSlotId: randomUUID(), // Add the new required field
       timeSlot: validTimeSlot,
       contactInfo: validContactInfo,
       status: "cancelled",
