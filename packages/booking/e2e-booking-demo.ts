@@ -80,9 +80,10 @@ async function runBookingE2ETest() {
     if (createdAppointment) {
       console.log("✅ Appointment verified in storage");
       console.log(`   Status: ${createdAppointment.state.status}`);
-      // Refresh our view of the time slot
+      // Get fresh time slot from storage
       const bookedTimeSlot = timeSlots.get(availableSlots[0].id);
       console.log(`   Time slot now available: ${bookedTimeSlot?.state.available ? 'Yes' : 'No'}`);
+      console.log(`   Time slot ID: ${bookedTimeSlot?.state.id}`);
     } else {
       console.log("❌ Failed to verify appointment in storage");
     }
@@ -104,28 +105,40 @@ async function runBookingE2ETest() {
       console.log(`   Error: ${error.message}`);
     }
     
-    // 7. Cancel the appointment
-    console.log("\n7️⃣  Cancelling the appointment...");
+    // 7. Show available slots before cancellation
+    console.log("\n7️⃣  Available slots before cancellation:");
+    const availableBeforeCancel = Array.from(timeSlots.values()).filter(ts => ts.state.available).length;
+    console.log(`   Available time slots: ${availableBeforeCancel}`);
+    
+    // 8. Cancel the appointment
+    console.log("\n8️⃣  Cancelling the appointment...");
+    console.log(`   Cancelling appointment ID: ${scheduleResult.appointmentId}`);
+    console.log(`   Time slot ID from appointment: ${createdAppointment?.state.timeSlot.id}`);
     await cancelAppointmentUseCase({
       appointmentId: scheduleResult.appointmentId,
     });
     
     console.log("✅ Appointment cancelled successfully");
     
-    // 8. Verify the appointment was cancelled and time slot released
-    console.log("\n8️⃣  Verifying cancellation...");
+    // 9. Verify the appointment was cancelled and time slot released
+    console.log("\n9️⃣  Verifying cancellation...");
     const cancelledAppointment = appointments.get(scheduleResult.appointmentId);
     if (cancelledAppointment && cancelledAppointment.state.status === "cancelled") {
       console.log("✅ Appointment status correctly updated to cancelled");
-      // Refresh our view of the time slot
+      // Count available slots after cancellation
+      const availableAfterCancel = Array.from(timeSlots.values()).filter(ts => ts.state.available).length;
+      console.log(`   Available time slots: ${availableAfterCancel} (was ${availableBeforeCancel})`);
+      
+      // Check the specific time slot
       const releasedTimeSlot = timeSlots.get(availableSlots[0].id);
-      console.log(`   Time slot now available: ${releasedTimeSlot?.state.available ? 'Yes' : 'No'}`);
+      console.log(`   Specific time slot available: ${releasedTimeSlot?.state.available ? 'Yes' : 'No'}`);
+      console.log(`   Specific time slot ID: ${releasedTimeSlot?.state.id}`);
     } else {
       console.log("❌ Failed to verify cancellation");
     }
     
-    // 9. Show final state
-    console.log("\n9️⃣  Final state summary...");
+    // 10. Show final state
+    console.log("\n🔟  Final state summary...");
     console.log(`   Total appointments: ${appointments.size}`);
     console.log(`   Total clients: ${clients.size}`);
     console.log(`   Total time slots: ${timeSlots.size}`);

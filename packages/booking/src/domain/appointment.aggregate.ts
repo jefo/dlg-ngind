@@ -25,7 +25,8 @@ export const AppointmentStatusSchema = z.enum([
 export const AppointmentPropsSchema = z.object({
   id: z.string().uuid(),
   clientId: z.string().uuid(),
-  timeSlot: DateTimeRangeSchema,
+  timeSlotId: z.string().uuid(), // Store the time slot ID
+  timeSlot: DateTimeRangeSchema, // Store the time range for reference
   contactInfo: ContactInfoSchema,
   status: AppointmentStatusSchema,
   bookingReference: z.string().min(1),
