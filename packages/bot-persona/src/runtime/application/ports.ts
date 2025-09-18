@@ -27,3 +27,20 @@ export const invalidInputOutPort =
  */
 export const conversationNotFoundOutPort =
 	createPort<(dto: FailureDto) => Promise<void>>();
+
+/**
+ * DTO для запуска nurturing-цепочки.
+ */
+export type StartNurturingSequenceDto = {
+	chatId: string;
+	contactInfo?: {
+		email?: string;
+		name?: string;
+	};
+};
+
+/**
+ * Сообщает о необходимости запустить nurturing-цепочку для лида.
+ */
+export const startNurturingSequenceOutPort =
+	createPort<(dto: StartNurturingSequenceDto) => Promise<void>>();

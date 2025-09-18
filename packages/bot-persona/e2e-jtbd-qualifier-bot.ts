@@ -1,18 +1,20 @@
-import { setPortAdapter } from "@maxdev1/sotajs";
+import { setPortAdapter, usePort } from "@maxdev1/sotajs";
 import { composeApp } from "./src/composition";
 import { defineBotPersonaUseCase } from "./src/desing/application/define-bot-persona.use-case";
 import { botPersonaDefinedOutPort } from "./src/desing/application/ports";
 import { processUserInputUseCase } from "./src/runtime/application/process-user-input.use-case";
+import { startNurturingSequenceOutPort } from "./src/runtime/application/ports";
 import { startConversationUseCase } from "./src/runtime/application/start-conversation.use-case";
 
-// --- Определение "JTBD Lead Qualifier Bot v2" ---
+// --- Определение "JTBD Lead Qualifier Bot v1.1" ---
 
 const jtbdQualifierBotDefinition = {
-	name: "JTBD Lead Qualifier Bot v2",
+	name: "JTBD Lead Qualifier Bot v1.1",
 	formDefinition: {
-		id: "jtbd-form-v2",
-		name: "JTBD Form v2",
+		id: "jtbd-form-v1.1",
+		name: "JTBD Form v1.1",
 		fields: [
+			{ id: "f-name", name: "name", type: "string", label: "Name" },
 			{ id: "f-job", name: "job", type: "multiselect", label: "Job" },
 			{ id: "f-context", name: "context", type: "multiselect", label: "Context" },
 			{ id: "f-struggles", name: "struggles", type: "string", label: "Struggles" },
@@ -20,14 +22,15 @@ const jtbdQualifierBotDefinition = {
 			{ id: "f-extras", name: "extras", type: "multiselect", label: "Extras" },
 			{ id: "f-timeline", name: "timeline", type: "string", label: "Timeline" },
 			{ id: "f-budget", name: "budget", type: "string", label: "Budget" },
-			// Поле для хранения динамической оценки
 			{ id: "f-estimate", name: "estimate", type: "object", label: "Estimate" },
+			{ id: "f-recommended_model", name: "recommendedModel", type: "string", label: "Recommended Model" },
 		],
 	},
 	fsmDefinition: {
 		initialStateId: "welcome",
 		states: [
 			{ id: "welcome" },
+			{ id: "ask_name" },
 			{ id: "ask_job" },
 			{ id: "ask_context" },
 			{ id: "ask_struggles" },
@@ -35,124 +38,146 @@ const jtbdQualifierBotDefinition = {
 			{ id: "ask_extras" },
 			{ id: "ask_timeline" },
 			{ id: "ask_budget" },
-			{ id: "show_estimate" },
-			{ id: "show_summary" },
-			{ id: "final_cta" },
-			{ id: "goodbye" },
+			{ id: "pre_offer" },
+			{ id: "ask_show_examples" },
+			{ id: "show_examples" },
+			{ id: "book_call" },
+			{ id: "nurturing_goodbye" },
+			{ id: "simple_goodbye" },
 		],
 		transitions: [
-			{ from: "welcome", event: "START", to: "ask_job" },
+			{ from: "welcome", event: "START", to: "ask_name" },
+			{ from: "ask_name", event: "SUBMIT_NAME", to: "ask_job", assign: { name: "payload.text" } },
 			{ from: "ask_job", event: "SUBMIT_JOBS", to: "ask_context", assign: { job: "payload.selection" } },
 			{ from: "ask_context", event: "SUBMIT_CONTEXTS", to: "ask_struggles", assign: { context: "payload.selection" } },
 			{ from: "ask_struggles", event: "SUBMIT_STRUGGLES", to: "ask_outcomes", assign: { struggles: "payload.text" } },
 			{ from: "ask_outcomes", event: "SUBMIT_OUTCOMES", to: "ask_extras", assign: { outcomes: "payload.text" } },
-      // Изменен порядок: сначала фичи, потом сроки и бюджет
 			{ from: "ask_extras", event: "SUBMIT_EXTRAS", to: "ask_timeline", assign: { extras: "payload.selection" } },
 			{ from: "ask_timeline", event: "SELECT_TIMELINE", to: "ask_budget", assign: { timeline: "payload.selection" } },
 
-      // Динамический расчет оценки в зависимости от наличия CRM в `extras`
+			// Расчет пре-оффера и переход к его показу
 			{
 				from: "ask_budget",
 				event: "SELECT_BUDGET",
-				to: "show_estimate",
-				assign: { budget: "payload.selection", estimate: "{ price: \"$1500-$2500\", timeline: \"4-6 недель\" }" },
+				to: "pre_offer",
+				assign: { budget: "payload.selection", estimate: { price: "$1500-$2500", timeline: "4-6 недель" }, recommendedModel: "Бот для SaaS-триала" },
 				cond: { field: "extras", operator: "contains", value: "crm" },
 			},
 			{
 				from: "ask_budget",
 				event: "SELECT_BUDGET",
-				to: "show_estimate",
-				assign: { budget: "payload.selection", estimate: "{ price: \"$800-$1200\", timeline: \"3-4 недели\" }" },
+				to: "pre_offer",
+				assign: { budget: "payload.selection", estimate: { price: "$800-$1200", timeline: "3-4 недели" }, recommendedModel: "Бот для вебинарной воронки" },
 			},
 
-			{ from: "show_estimate", event: "CONTINUE", to: "show_summary" },
-			{ from: "show_summary", event: "CONTINUE", to: "final_cta" },
-			{ from: "final_cta", event: "ACCEPT_DEMO", to: "goodbye" },
-			{ from: "final_cta", event: "DECLINE_DEMO", to: "goodbye" },
+			// Ветвление после пре-оффера
+			{ from: "pre_offer", event: "CONTINUE", to: "ask_show_examples" },
+			{ from: "pre_offer", event: "TOO_EXPENSIVE", to: "nurturing_goodbye" },
+
+			{ from: "ask_show_examples", event: "ACCEPT_EXAMPLES", to: "show_examples" },
+			{ from: "ask_show_examples", event: "DECLINE_EXAMPLES", to: "book_call" },
+
+			{ from: "show_examples", event: "CONTINUE", to: "book_call" },
+			{ from: "book_call", event: "BOOK_CALL", to: "simple_goodbye" },
 		],
 	},
 	viewDefinition: {
 		nodes: [
-			{ id: "welcome", component: "Message", props: { text: "👋 Привет! Я помогу вам понять, какой бот нужен именно вашему бизнесу. Обычно это занимает 3–5 минут. Поехали?", buttons: [{ label: "Поехали!", event: "START" }] } },
-      // Добавлена кнопка "Далее" для мульти-селекта
-			{ id: "ask_job", component: "Message", props: { text: "Какую задачу должен решать ваш бот? (можно выбрать несколько)", buttons: [{ label: "Квалификация лидов"}, { label: "Поддержка (FAQ)"}, { label: "Далее", event: "SUBMIT_JOBS", payload: { selection: ["qualification", "support"] } }] } },
-			{ id: "ask_context", component: "Message", props: { text: "А где именно бот будет работать? (можно выбрать несколько)", buttons: [{ label: "Telegram"}, { label: "Веб-сайт"}, { label: "Далее", event: "SUBMIT_CONTEXTS", payload: { selection: ["telegram", "website"] } }] } },
-      // Улучшенные формулировки и добавлены кнопки
-			{ id: "ask_struggles", component: "Message", props: { text: "Какие узкие места в вашей воронке продаж или процессах вы видите сейчас?", buttons: [{ label: "Долго отвечаем на заявки", event: "SUBMIT_STRUGGLES", payload: { text: "Долго отвечаем на заявки" } }, { label: "Теряем клиентов", event: "SUBMIT_STRUGGLES", payload: { text: "Теряем клиентов" } }] } },
-			{ id: "ask_outcomes", component: "Message", props: { text: "Достижение каких KPI будет для вас идеальным результатом работы бота?", buttons: [{ label: "Рост конверсии", event: "SUBMIT_OUTCOMES", payload: { text: "Рост конверсии" } }, { label: "Снижение времени ответа", event: "SUBMIT_OUTCOMES", payload: { text: "Снижение времени ответа" } }] } },
-			{ id: "ask_extras", component: "Message", props: { text: "Хотите, чтобы я предложил дополнительные возможности? (можно выбрать несколько)", buttons: [{ label: "Интеграция с CRM"}, { label: "Сбор аналитики"}, { label: "Далее", event: "SUBMIT_EXTRAS", payload: { selection: ["crm", "analytics"] } }] } },
-			{ id: "ask_timeline", component: "Message", props: { text: "Какие у вас сроки запуска?", buttons: [{ label: "Срочно (1–2 недели)", event: "SELECT_TIMELINE", payload: { selection: "urgent" } }, { label: "В течение месяца", event: "SELECT_TIMELINE", payload: { selection: "month" } }] } },
-			{ id: "ask_budget", component: "Message", props: { text: "А какой у вас ориентировочный бюджет на проект?", buttons: [{ label: "до $1500", event: "SELECT_BUDGET", payload: { selection: "<1500" } }, { label: "$1500+", event: "SELECT_BUDGET", payload: { selection: ">1500" } }] } },
-      // Вьюха для оценки теперь динамическая
-			{ id: "show_estimate", component: "Message", props: { text: "Спасибо! На основе ваших ответов, проект обычно занимает context.estimate.timeline и стоит context.estimate.price. Это предварительная оценка.", buttons: [{ label: "Продолжить", event: "CONTINUE" }] } },
-			{ id: "show_summary", component: "Message", props: { text: "Спасибо 🙏! Вот резюме вашей заявки:\n🎯 Цель: context.job\n💰 Бюджет: context.budget\n⏳ Сроки: context.timeline", buttons: [{ label: "Все верно!", event: "CONTINUE" }] } },
-			{ id: "final_cta", component: "Message", props: { text: "Я передам это нашему менеджеру. Хотите получить бесплатный демо-прототип вашего будущего бота?", buttons: [{ label: "Да, хочу демо!", event: "ACCEPT_DEMO" }, { label: "Нет, спасибо", event: "DECLINE_DEMO" }] } },
-			{ id: "goodbye", component: "Message", props: { text: "Отлично! Спасибо за уделенное время. Хорошего дня!" } },
+			{ id: "welcome", component: "Message", props: { text: "👋 Привет! Я помогу вам понять, какой бот нужен именно вашему бизнесу. Поехали?", buttons: [{ label: "Поехали!", event: "START" }] } },
+			{ id: "ask_name", component: "Message", props: { text: "Для начала, как я могу к вам обращаться?" } },
+			{ id: "ask_job", component: "Message", props: { text: "Какую основную задачу должен решать ваш бот? (можно выбрать несколько)", buttons: [{ label: "Квалификация лидов" }, { label: "Поддержка (FAQ)" }, { label: "Далее", event: "SUBMIT_JOBS", payload: { selection: ["qualification", "support"] } }] } },
+			{ id: "ask_context", component: "Message", props: { text: "А где именно бот будет работать?", buttons: [{ label: "Telegram" }, { label: "Веб-сайт" }, { label: "Далее", event: "SUBMIT_CONTEXTS", payload: { selection: ["website"] } }] } },
+			{ id: "ask_struggles", component: "Message", props: { text: "Понял. Какие узкие места в ваших процессах вы видите сейчас?", buttons: [{ label: "Долго отвечаем на заявки", event: "SUBMIT_STRUGGLES", payload: { text: "Долго отвечаем на заявки" } }] } },
+			{ id: "ask_outcomes", component: "Message", props: { text: "Ок. А достижение каких KPI будет для вас идеальным результатом?", buttons: [{ label: "Рост конверсии", event: "SUBMIT_OUTCOMES", payload: { text: "Рост конверсии" } }] } },
+			{ id: "ask_extras", component: "Message", props: { text: "Нужны ли какие-то дополнительные возможности?", buttons: [{ label: "Интеграция с CRM" }, { label: "Сбор аналитики" }, { label: "Далее", event: "SUBMIT_EXTRAS", payload: { selection: ["crm", "analytics"] } }] } },
+			{ id: "ask_timeline", component: "Message", props: { text: "Какие у вас желаемые сроки запуска?", buttons: [{ label: "В течение месяца", event: "SELECT_TIMELINE", payload: { selection: "month" } }] } },
+			{ id: "ask_budget", component: "Message", props: { text: "И последний вопрос, чтобы я мог предложить вам релевантное решение. В какой бюджет планируете уложиться?", buttons: [{ label: "$1500+", event: "SELECT_BUDGET", payload: { selection: ">1500" } }] } },
+
+			// Шаг с пре-оффером
+			{ id: "pre_offer", component: "Message", props: { text: "Спасибо, context.name! На основе ваших ответов, вам идеально подходит модель **context.recommendedModel**. Обычно такие проекты стоят **context.estimate.price** и занимают **context.estimate.timeline**. Это предварительная оценка.", buttons: [{ label: "Звучит интересно!", event: "CONTINUE" }, { label: "Спасибо, пока неактуально", event: "TOO_EXPENSIVE" }] } },
+
+			{ id: "ask_show_examples", component: "Message", props: { text: "Хотите, я покажу вам примеры подобных ботов в действии?", buttons: [{ label: "Да, покажи", event: "ACCEPT_EXAMPLES" }, { label: "Нет, спасибо", event: "DECLINE_EXAMPLES" }] } },
+			{ id: "show_examples", component: "Message", props: { text: "Отлично! Вот ссылка на релевантный кейс: [ссылка на кейс]. Изучите, и дайте мне знать, когда будете готовы продолжить.", buttons: [{ label: "Готов продолжить", event: "CONTINUE" }] } },
+			{ id: "book_call", component: "Message", props: { text: "Супер! Финальный шаг — забронировать короткий звонок с нашим специалистом для обсуждения деталей. Вот ссылка на календарь: [ссылка на Calendly]", buttons: [{ label: "Забронировал!", event: "BOOK_CALL" }] } },
+
+			// Прощания
+			{ id: "nurturing_goodbye", component: "Message", props: { text: "Понимаю. Спасибо, что уделили время! Чтобы вы могли лучше оценить потенциал, я буду иногда присылать вам полезные материалы по этой теме. Хорошего дня!" } },
+			{ id: "simple_goodbye", component: "Message", props: { text: "Отлично! Рады будем поработать. Хорошего дня!" } },
 		],
 	},
 };
 
+// Простоая замена для jest.fn() в обычном скрипте
+const createMock = () => {
+	const calls: any[] = [];
+	const fn = (...args: any[]) => {
+		calls.push(args);
+	};
+	fn.mock = {
+		calls: calls,
+	};
+	return fn;
+};
 
-async function runJtbdQualifierTestV2() {
-	console.log("\n--- 🚀 Starting E2E JTBD Qualifier Bot Test v2 ---");
+async function runJtbdQualifierTestFinal() {
+	console.log("\n--- 🚀 Starting E2E JTBD Qualifier Bot Test (Final) ---");
 
 	composeApp();
+
+	// Используем нашу простую мок-функцию
+	const startNurturingMock = createMock();
+	setPortAdapter(startNurturingSequenceOutPort, startNurturingMock as any);
 
 	let createdPersonaId: string;
 	setPortAdapter(botPersonaDefinedOutPort, async (dto) => {
 		createdPersonaId = dto.personaId;
-		console.log(`\n✅ Bot Persona Defined: ${dto.name} (ID: ${dto.personaId})`);
 	});
 
-	console.log("\n1️⃣  Defining JTBD Qualifier Bot Persona v2...");
 	await defineBotPersonaUseCase(jtbdQualifierBotDefinition);
 
-	if (!createdPersonaId) {
-		console.error("❌ E2E Test Failed: Bot Persona ID was not captured.");
-		return;
-	}
-
-	const chatId = "e2e-jtbd-chat-v2";
-
-	console.log(`\n2️⃣  Starting conversation for chatId: ${chatId}...`);
+	const chatId = "e2e-jtbd-chat-final";
 	await startConversationUseCase({ botPersonaId: createdPersonaId, chatId });
 
-	// 3. Эмулируем полный путь пользователя по новому сценарию
-	console.log("\n➡️  Event: START");
+	// --- Сценарий 1: Успешная квалификация ---
+	console.log("\n--- 演 Scenario 1: Successful Qualification ---");
 	await processUserInputUseCase({ chatId, event: "START" });
-
-	console.log("\n➡️  Event: SUBMIT_JOBS");
-	await processUserInputUseCase({ chatId, event: "SUBMIT_JOBS", payload: { selection: ["qualification", "support"] } });
-
-	console.log("\n➡️  Event: SUBMIT_CONTEXTS");
+	await processUserInputUseCase({ chatId, event: "SUBMIT_NAME", payload: { text: "Петр" } });
+	await processUserInputUseCase({ chatId, event: "SUBMIT_JOBS", payload: { selection: ["qualification"] } });
 	await processUserInputUseCase({ chatId, event: "SUBMIT_CONTEXTS", payload: { selection: ["website"] } });
-
-	console.log("\n➡️  Event: SUBMIT_STRUGGLES");
-	await processUserInputUseCase({ chatId, event: "SUBMIT_STRUGGLES", payload: { text: "Теряем лидов по ночам" } });
-
-	console.log("\n➡️  Event: SUBMIT_OUTCOMES");
-	await processUserInputUseCase({ chatId, event: "SUBMIT_OUTCOMES", payload: { text: "Все лиды в CRM" } });
-
-  // Проверяем логику с CRM
-	console.log("\n➡️  Event: SUBMIT_EXTRAS");
-	await processUserInputUseCase({ chatId, event: "SUBMIT_EXTRAS", payload: { selection: ["crm", "analytics"] } });
-
-	console.log("\n➡️  Event: SELECT_TIMELINE");
+	await processUserInputUseCase({ chatId, event: "SUBMIT_STRUGGLES", payload: { text: "Низкая конверсия" } });
+	await processUserInputUseCase({ chatId, event: "SUBMIT_OUTCOMES", payload: { text: "Рост лидов" } });
+	await processUserInputUseCase({ chatId, event: "SUBMIT_EXTRAS", payload: { selection: ["crm"] } }); // Выбираем CRM
 	await processUserInputUseCase({ chatId, event: "SELECT_TIMELINE", payload: { selection: "month" } });
-
-	console.log("\n➡️  Event: SELECT_BUDGET");
-	await processUserInputUseCase({ chatId, event: "SELECT_BUDGET", payload: { selection: ">1500" } });
-
-	console.log("\n➡️  Event: CONTINUE (after estimate)");
+	await processUserInputUseCase({ chatId, event: "SELECT_BUDGET", payload: { selection: ">1500" } }); // Бюджет подходит
+	await processUserInputUseCase({ chatId, event: "CONTINUE" }); // Соглашаемся с пре-оффером
+	await processUserInputUseCase({ chatId, event: "ACCEPT_EXAMPLES" }); // Соглашаемся посмотреть примеры
 	await processUserInputUseCase({ chatId, event: "CONTINUE" });
+	await processUserInputUseCase({ chatId, event: "BOOK_CALL" });
 
-	console.log("\n➡️  Event: CONTINUE (after summary)");
-	await processUserInputUseCase({ chatId, event: "CONTINUE" });
+	// --- Сценарий 2: Нецелевой лид ---
+	console.log("\n--- 演 Scenario 2: Non-qualified Lead (Nurturing) ---");
+	const chatId2 = "e2e-jtbd-chat-nurturing";
+	await startConversationUseCase({ botPersonaId: createdPersonaId, chatId: chatId2 });
+	await processUserInputUseCase({ chatId: chatId2, event: "START" });
+	await processUserInputUseCase({ chatId: chatId2, event: "SUBMIT_NAME", payload: { text: "Иван" } });
+	await processUserInputUseCase({ chatId: chatId2, event: "SUBMIT_JOBS", payload: { selection: ["support"] } });
+	await processUserInputUseCase({ chatId: chatId2, event: "SUBMIT_CONTEXTS", payload: { selection: ["telegram"] } });
+	await processUserInputUseCase({ chatId: chatId2, event: "SUBMIT_STRUGGLES", payload: { text: "Клиенты долго ждут ответа" } });
+	await processUserInputUseCase({ chatId: chatId2, event: "SUBMIT_OUTCOMES", payload: { text: "Ускорить саппорт" } });
+	await processUserInputUseCase({ chatId: chatId2, event: "SUBMIT_EXTRAS", payload: { selection: [] } }); // Без CRM
+	await processUserInputUseCase({ chatId: chatId2, event: "SELECT_TIMELINE", payload: { selection: "month" } });
+	await processUserInputUseCase({ chatId: chatId2, event: "SELECT_BUDGET", payload: { selection: ">1500" } });
+	await processUserInputUseCase({ chatId: chatId2, event: "TOO_EXPENSIVE" }); // Нажимает "пока неактуально"
 
-	console.log("\n➡️  Event: ACCEPT_DEMO");
-	await processUserInputUseCase({ chatId, event: "ACCEPT_DEMO" });
+	// Проверяем, что порт для nurturing был вызван
+	if (startNurturingMock.mock.calls.length > 0) {
+		console.log("\n✅ startNurturingSequenceOutPort was called successfully!");
+	} else {
+		console.error("❌ E2E Test Failed: startNurturingSequenceOutPort was NOT called.");
+	}
 
-	console.log("\n--- ✅ E2E JTBD Qualifier Bot Test v2 Finished ---\\n");
+	console.log("\n--- ✅ E2E Final Test Finished ---\n");
 }
 
-runJtbdQualifierTestV2();
+// Запускаем тест
+runJtbdQualifierTestFinal();

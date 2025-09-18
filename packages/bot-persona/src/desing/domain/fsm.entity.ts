@@ -13,7 +13,7 @@ export const TransitionDefinitionSchema = z.object({
 	from: z.string(),
 	to: z.string(),
 	event: z.string(),
-	assign: z.record(z.string(), z.string()).optional(),
+	assign: z.record(z.string(), z.any()).optional(),
 	cond: GuardConditionSchema.optional(),
 });
 
