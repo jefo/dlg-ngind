@@ -5,7 +5,7 @@ import { createEntity } from "@maxdev1/sotajs";
 
 export const GuardConditionSchema = z.object({
 	field: z.string(),
-	operator: z.enum(["equals", "not_equals"]),
+	operator: z.enum(["equals", "not_equals", "contains"]),
 	value: z.any(),
 });
 

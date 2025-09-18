@@ -12,6 +12,9 @@ Implementing a lead qualification bot for our kwork custom bot development servi
 - `playbook.md` - Development roadmap
 - `ProcessUserInputUseCase.md` - Key use case documentation
 
+## New Bounded Context
+- `packages/booking` - Booking context for appointment scheduling
+
 ## Immediate Goal
 Create a lead qualification bot that will be linked from our kwork listing to qualify leads and drive them to book a free consultation.
 

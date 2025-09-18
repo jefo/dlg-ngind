@@ -26,6 +26,7 @@ export const FormFieldSchema = z.object({
 		"select",
 		"multiselect",
 		"textarea",
+		"object",
 	]),
 	label: z.string(),
 	placeholder: z.string().optional(),

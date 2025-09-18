@@ -54,26 +54,31 @@ export const Conversation = createAggregate({
 			const resolvedProps: Record<string, any> = { ...viewNode.props };
 			const formState = state.form.state.formState;
 
+			const getNestedValue = (obj: any, path: string) =>
+				path.split(".").reduce((acc, part) => acc && acc[part], obj);
+
+			const context: Record<string, any> = {};
+			for (const field of state.form.state.definition.fields) {
+				context[field.name] = formState[field.id]?.value;
+			}
+
 			for (const key in resolvedProps) {
-				const propValue = resolvedProps[key];
+				let propValue = resolvedProps[key];
 				if (typeof propValue === "string" && propValue.includes("context.")) {
-					// Ищем все вхождения context.fieldName в строке
-					const matches = propValue.match(/context\.[\w_]+/g) || [];
+					const matches = propValue.match(/context\.([\w_\.]+)/g) || [];
 					for (const match of matches) {
-						const contextKey = match.substring("context.".length);
-						const field = state.form.state.definition.fields.find(
-							(f) => f.name === contextKey,
-						);
-						if (field && formState[field.id]?.value) {
-							// Заменяем шаблон на реальное значение
-							resolvedProps[key] = resolvedProps[key].replace(
-								match,
-								state.form.state.formState[field.id]?.value,
-							);
+						const path = match.substring("context.".length);
+						const valueToReplace = getNestedValue(context, path);
+
+						if (valueToReplace !== undefined && valueToReplace !== null) {
+							// Use a simple string replacement
+							propValue = propValue.replace(match, valueToReplace);
 						}
 					}
+					resolvedProps[key] = propValue;
 				}
 			}
+
 			return { ...viewNode, props: resolvedProps };
 		},
 	},
@@ -112,7 +117,9 @@ export const Conversation = createAggregate({
 		                    conditionMet = formValue === value;
 		                } else if (operator === "not_equals") {
 		                    conditionMet = formValue !== value;
-		                }
+		                } else if (operator === "contains") {
+									conditionMet = Array.isArray(formValue) && formValue.includes(value);
+								}
 		
 		                if (conditionMet) {
 		                    transition = t;
