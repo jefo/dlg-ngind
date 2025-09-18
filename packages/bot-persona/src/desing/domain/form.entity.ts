@@ -138,8 +138,10 @@ function validateFieldValue(
 
 // --- SotaJS Entity Definition ---
 
-export const FormEntity = createEntity({
+export const FormEntity = createAggregate({
+	name: "Form",
 	schema: FormEntitySchema,
+	invariants: [],
 	actions: {
 		setFieldValue: (
 			state: FormEntityState,

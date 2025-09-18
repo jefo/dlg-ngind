@@ -24,7 +24,8 @@
 
     "paths": {
       "bot-persona": ["./packages/bot-persona"],
-      "chat": ["./packages/chat"]
+      "chat": ["./packages/chat"],
+      "@dlg-ngind/booking": ["./packages/booking"]
     }
   }
 }

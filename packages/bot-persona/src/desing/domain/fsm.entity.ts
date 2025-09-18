@@ -3,11 +3,18 @@ import { createEntity } from "@maxdev1/sotajs";
 
 // --- Чистые определения и схемы для хранения и передачи данных (DTOs) ---
 
+export const GuardConditionSchema = z.object({
+	field: z.string(),
+	operator: z.enum(["equals", "not_equals"]),
+	value: z.any(),
+});
+
 export const TransitionDefinitionSchema = z.object({
 	from: z.string(),
 	to: z.string(),
 	event: z.string(),
 	assign: z.record(z.string(), z.string()).optional(),
+	cond: GuardConditionSchema.optional(),
 });
 
 export const StateDefinitionSchema = z.object({

@@ -13,7 +13,6 @@ const MessageSchema = z.object({
 type MessageProps = z.infer<typeof MessageSchema>;
 
 export const Message = createEntity({
-	name: "Message",
 	schema: MessageSchema,
 	actions: {
 		editContent: (state: MessageProps, newContent: string) => {

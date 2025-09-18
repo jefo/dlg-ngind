@@ -12,7 +12,6 @@ const ChatSchema = z.object({
 type ChatProps = z.infer<typeof ChatSchema>;
 
 export const ChatEntity = createEntity({
-	name: "Chat",
 	schema: ChatSchema,
 	actions: {
 		addParticipant: (state: ChatProps, personaId: string) => {
