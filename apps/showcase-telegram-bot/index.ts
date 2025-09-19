@@ -64,16 +64,19 @@ async function main() {
 		return;
 	}
 
+	console.log("[Debug] DEMO_CHAT_ID from env:", process.env.DEMO_CHAT_ID);
 	const demoChatId = `telegram:${process.env.DEMO_CHAT_ID}`;
+	console.log("[Debug] demoChatId:", demoChatId);
 	if (!process.env.DEMO_CHAT_ID) {
 		console.warn(
 			"[Orchestrator]: DEMO_CHAT_ID env variable is not set. Cannot start demo conversation.",
 		);
 	} else {
-		// await startConversationUseCase({
-		// 	botPersonaId,
-		// 	chatId: demoChatId,
-		// });
+		console.log("[Debug] Starting demo conversation for chatId:", demoChatId);
+		await startConversationUseCase({
+			botPersonaId,
+			chatId: demoChatId,
+		});
 	}
 
 	// 4. Запускаем основной сервис прослушивания сообщений из Telegram

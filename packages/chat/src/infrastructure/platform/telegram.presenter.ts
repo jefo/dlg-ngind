@@ -3,33 +3,35 @@ import type { ComponentRenderDto } from "@dlg-ngind/bot-persona/src/runtime/dtos
 import type { MessageProps } from "@dlg-ngind/bot-persona/src/desing/domain/ui/message.entity";
 import type { ButtonGroupProps } from "@dlg-ngind/bot-persona/src/desing/domain/ui/button-group.entity";
 
-/**
+/** 
  * Telegram Presenter - это адаптер для порта componentRenderOutPort.
  * Он отвечает за преобразование платформо-независимых UI-сущностей
  * в нативные элементы управления Telegram.
  */
 export async function telegramPresenterAdapter(dto: ComponentRenderDto): Promise<void> {
-  const { chatId, components } = dto;
+  // В новой системе мы получаем компоненты по одному, с уже объединенными кнопками
+  const { chatId, componentName, props } = dto;
 
-  // 1. Находим компоненты, которые нам нужны
-  const messageComponent = components.find(
-    (c) => "text" in c // Простой способ определить MessageEntity
-  ) as MessageProps | undefined;
-
-  const buttonGroupComponent = components.find(
-    (c) => "buttons" in c // Простой способ определить ButtonGroupEntity
-  ) as ButtonGroupProps | undefined;
-
-  if (!messageComponent) {
-    console.error("[Presenter] Error: No message component found to render.");
+  // Проверяем, что это сообщение - только сообщения мы отправляем напрямую
+  if (componentName !== 'message' && componentName !== 'Message') {
+    // Для других компонентов мы ничего не делаем,
+    // так как кнопки отправляются вместе с сообщением
     return;
   }
 
-  // 2. Формируем нативный UI для Telegram
+  // Извлекаем текст сообщения
+  const messageText = props.text;
+  if (!messageText) {
+    console.error("[Presenter] Error: No text found in message component.");
+    return;
+  }
+
+  // Формируем нативный UI для Telegram
   let reply_markup: any = {};
 
-  if (buttonGroupComponent && buttonGroupComponent.buttons.length > 0) {
-    const inline_keyboard = buttonGroupComponent.buttons.map(button => ({
+  // Если есть кнопки в props, формируем их
+  if (props.buttons && Array.isArray(props.buttons) && props.buttons.length > 0) {
+    const inline_keyboard = props.buttons.map(button => ({
       text: button.label,
       // Важно: превращаем event и payload в строку, чтобы передать через callback_data
       callback_data: JSON.stringify({ event: button.event, payload: button.payload || {} }),
@@ -41,7 +43,7 @@ export async function telegramPresenterAdapter(dto: ComponentRenderDto): Promise
     };
   }
 
-  // 3. Вызываем API-клиент Telegram
+  // Вызываем API-клиент Telegram
   const [platform, platformChatId] = chatId.split(":");
   if (platform !== 'telegram' || !platformChatId) {
     console.error(`[Presenter] Invalid chatId format for Telegram: ${chatId}`);
@@ -57,7 +59,7 @@ export async function telegramPresenterAdapter(dto: ComponentRenderDto): Promise
 
   await sendTelegramMessage(
     Number(platformChatId),
-    messageComponent.text,
+    messageText,
     token,
     reply_markup
   );

@@ -30,19 +30,21 @@ const greeterBotDefinition = {
 		nodes: [
 			{
 				id: "welcome",
-				component: "Message",
-				props: { text: "Привет! Я бот, который умеет здороваться." },
+				components: [{
+					message: { text: "Привет! Я бот, который умеет здороваться." }
+				}]
 			},
 			{
 				id: "ask_name",
-				component: "Message",
-				props: { text: "Как тебя зовут?" },
+				components: [{
+					message: { text: "Как тебя зовут?" }
+				}]
 			},
 			{
 				id: "greet_user",
-				component: "Message",
-				// Используем динамическое свойство, которое будет заполнено из контекста
-				props: { text: "Приятно познакомиться, context.userName!" },
+				components: [{
+					message: { text: "Приятно познакомиться, context.userName!" }
+				}]
 			},
 		],
 	},

@@ -88,12 +88,41 @@ export async function startConversationUseCase(
 		const initialView = conversation.currentView;
 		if (initialView) {
 			// В новой системе компонентов мы отправляем весь массив компонентов
-			for (const component of initialView.components) {
-				await componentRender({
-					chatId: conversation.state.chatId,
-					componentName: component.id, // Используем id компонента как имя
-					props: component, // Передаем весь компонент как props
-				});
+			// Проверяем, что у initialView есть свойство components
+			if ('components' in initialView && Array.isArray(initialView.components)) {
+				// Для каждого wrapper'а компонентов отправляем их вместе
+				for (const componentWrapper of initialView.components) {
+					// Собираем все компоненты в этом wrapper'е
+					const componentsToSend = [];
+					for (const [componentName, componentProps] of Object.entries(componentWrapper)) {
+						if (componentProps) {
+							componentsToSend.push({
+								name: componentName,
+								props: componentProps
+							});
+						}
+					}
+					
+					// Отправляем все компоненты в этом wrapper'е вместе
+					if (componentsToSend.length > 0) {
+						// Находим сообщение (если есть)
+						const messageComponent = componentsToSend.find(c => c.name === 'message');
+						// Находим группу кнопок (если есть)
+						const buttonGroupComponent = componentsToSend.find(c => c.name === 'buttonGroup');
+						
+						// Отправляем сообщение с кнопками (если есть сообщение)
+						if (messageComponent) {
+							await componentRender({
+								chatId: conversation.state.chatId,
+								componentName: 'message',
+								props: {
+									...messageComponent.props,
+									buttons: buttonGroupComponent?.props?.buttons || []
+								}
+							});
+						}
+					}
+				}
 			}
 		}
 	} catch (error: any) {
