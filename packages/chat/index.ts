@@ -1,4 +1,4 @@
-export * from "./src/application";
-export * from "./src/infrastructure";
-export * from "./src/domain";
+export * as App from "./src/application";
+export * as Infra from "./src/infrastructure";
+export * as Domain from "./src/domain";
 export * from "./src/composition";

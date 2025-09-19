@@ -177,7 +177,9 @@ export const FormEntity = createAggregate({
 				);
 			}),
 		isValid: (state) =>
-			Object.values(state.formState).every((field: any) => field.isValid),
+			Object.values(state.formState).every(
+				(field: { isValid: boolean }) => field.isValid,
+			),
 		errors: (state) => {
 			const allErrors: Record<string, string[]> = {};
 			for (const fieldId in state.formState) {

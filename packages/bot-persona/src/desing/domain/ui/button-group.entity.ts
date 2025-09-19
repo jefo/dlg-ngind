@@ -5,7 +5,7 @@ import { ButtonSchema, type ButtonProps } from "./button.entity";
 // --- Схема и тип для группы кнопок ---
 
 export const ButtonGroupSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string(),
   buttons: z.array(ButtonSchema),
   // В будущем здесь можно добавить layout: 'inline' | 'grid' и т.д.
 });
@@ -18,7 +18,6 @@ export type ButtonGroupProps = z.infer<typeof ButtonGroupSchema>;
  * ButtonGroupEntity представляет собой контейнер для одной или нескольких кнопок.
  */
 export const ButtonGroupEntity = createEntity({
-  name: "ButtonGroup",
   schema: ButtonGroupSchema,
   actions: {
     addButton: (state: ButtonGroupProps, newButton: ButtonProps) => {

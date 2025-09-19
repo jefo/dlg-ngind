@@ -1,9 +1,7 @@
 import { usePort } from "@maxdev1/sotajs";
 import { z } from "zod";
 import { randomUUID } from "crypto";
-import {
-	findBotPersonaByIdPort,
-} from "../../desing/domain/bot-persona.aggregate";
+import { findBotPersonaByIdPort } from "../../desing/domain/bot-persona.aggregate";
 import {
 	Conversation,
 	findActiveConversationByChatIdPort,
@@ -18,7 +16,7 @@ import { createFormFromDefinition } from "../../desing/domain";
 const StartConversationInputSchema = z.object({
 	botPersonaId: z.string().uuid(),
 	chatId: z.string(),
-	initialContext: z.record(z.any()).optional(),
+	initialContext: z.record(z.string(), z.any()).optional(),
 });
 
 type StartConversationInput = z.infer<typeof StartConversationInputSchema>;
@@ -53,7 +51,9 @@ export async function startConversationUseCase(
 	try {
 		const existingConversation = await findActiveConversationByChatId(chatId);
 		if (existingConversation) {
-			throw new Error(`An active conversation already exists for chatId ${chatId}.`);
+			throw new Error(
+				`An active conversation already exists for chatId ${chatId}.`,
+			);
 		}
 
 		const persona = await findBotPersonaById(botPersonaId);
@@ -87,11 +87,14 @@ export async function startConversationUseCase(
 
 		const initialView = conversation.currentView;
 		if (initialView) {
-			await componentRender({
-				chatId: conversation.state.chatId,
-				componentName: initialView.component,
-				props: initialView.props ?? {},
-			});
+			// В новой системе компонентов мы отправляем весь массив компонентов
+			for (const component of initialView.components) {
+				await componentRender({
+					chatId: conversation.state.chatId,
+					componentName: component.id, // Используем id компонента как имя
+					props: component, // Передаем весь компонент как props
+				});
+			}
 		}
 	} catch (error: any) {
 		await operationFailed({

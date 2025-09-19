@@ -1,5 +1,5 @@
 import { setPortAdapter } from "@maxdev1/sotajs";
-import { composeApp } from "./src/composition";
+import { composeBotPersona() } from "./src/composition";
 import { defineBotPersonaUseCase } from "./src/desing/application/define-bot-persona.use-case";
 import { botPersonaDefinedOutPort } from "./src/desing/application/ports";
 import { processUserInputUseCase } from "./src/runtime/application/process-user-input.use-case";
@@ -152,7 +152,7 @@ const leadQualifierBotDefinition = {
 async function runLeadQualifierTest() {
 	console.log("\n--- 🚀 Starting E2E Lead Qualifier Bot Test ---");
 
-	composeApp();
+	composeBotPersona()();
 
 	let createdPersonaId: string;
 	setPortAdapter(botPersonaDefinedOutPort, async (dto) => {

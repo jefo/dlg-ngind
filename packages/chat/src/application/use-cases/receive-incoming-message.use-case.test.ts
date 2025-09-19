@@ -10,7 +10,7 @@ import {
 	saveChatPort,
 	saveMessagePort,
 	savePersonaPort,
-} from "chat";
+} from "@dlg-ngind/chat";
 import { messageSentOutPort } from "../chat.application.ports";
 import { receiveIncomingMessageUseCase } from "./receive-incoming-message.use-case";
 import { createPersonaUseCase } from "./create-persona.use-case";

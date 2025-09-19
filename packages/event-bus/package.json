@@ -1,5 +1,5 @@
 {
-  "name": "event-bus",
+  "name": "@dlg-ngind/event-bus",
   "version": "0.1.0",
   "module": "src/index.ts",
   "type": "module",
@@ -9,8 +9,5 @@
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
-  },
-  "dependencies": {
-    "@maxdev1/sotajs": "^0.0.6"
   }
 }

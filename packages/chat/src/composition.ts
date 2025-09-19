@@ -1,6 +1,8 @@
 import { setPortAdapter, resetDI } from "@maxdev1/sotajs";
 import {
 	messageSentOutPort,
+	serviceStartedOutPort,
+	serviceStartFailedOutPort,
 	startListeningPort,
 	stopListeningPort,
 } from "./application/chat.application.ports";
@@ -28,7 +30,7 @@ import { sendTelegramMessage } from "./infrastructure/platform/telegram-api.clie
  * Composes the application based on environment configuration.
  */
 export function composeChatApp(config: { channel?: string }) {
-	resetDI();
+	// resetDI();
 
 	// --- Bind data ports ---
 	setPortAdapter(findPersonaByIdPort, inMemoryFindPersonaByIdAdapter);
@@ -36,10 +38,15 @@ export function composeChatApp(config: { channel?: string }) {
 	setPortAdapter(findChatByIdPort, inMemoryFindChatByIdAdapter);
 	setPortAdapter(saveChatPort, inMemorySaveChatAdapter);
 	setPortAdapter(saveMessagePort, inMemorySaveMessageAdapter);
+	setPortAdapter(serviceStartedOutPort, (channel) => {
+		console.log(`[ServiceStarted]: Started on channel ${channel}`);
+	});
 
 	// --- Bind output ports ---
 	setPortAdapter(messageSentOutPort, async (dto) => {
-		console.log(`[MessageSent]: Echoing '${dto.content}' to chat ${dto.chatId}`);
+		console.log(
+			`[MessageSent]: Echoing '${dto.content}' to chat ${dto.chatId}`,
+		);
 		// In a real app, this would use a proper presenter and DI to get the token.
 		// For this example, we read it directly from env.
 		const token = process.env.TELEGRAM_BOT_TOKEN;
@@ -54,9 +61,14 @@ export function composeChatApp(config: { channel?: string }) {
 		}
 	});
 
+	setPortAdapter(serviceStartFailedOutPort, async (error) => {
+		console.error(`[ServiceStartFailed]:`, error);
+	});
+
 	// --- Bind lifecycle ports based on channel config ---
 	switch (config.channel) {
 		case "telegram":
+			console.log("[Composition]: Telegram initializing...");
 			setPortAdapter(startListeningPort, telegramStartListeningAdapter);
 			setPortAdapter(stopListeningPort, telegramStopListeningAdapter);
 			console.log("[Composition]: Telegram adapter configured.");

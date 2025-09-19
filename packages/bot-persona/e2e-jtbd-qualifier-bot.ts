@@ -1,5 +1,5 @@
 import { setPortAdapter, usePort } from "@maxdev1/sotajs";
-import { composeApp } from "./src/composition";
+import { composeBotPersona() } from "./src/composition";
 import { defineBotPersonaUseCase } from "./src/desing/application/define-bot-persona.use-case";
 import { botPersonaDefinedOutPort } from "./src/desing/application/ports";
 import { processUserInputUseCase } from "./src/runtime/application/process-user-input.use-case";
@@ -122,7 +122,7 @@ const createMock = () => {
 async function runJtbdQualifierTestFinal() {
 	console.log("\n--- 🚀 Starting E2E JTBD Qualifier Bot Test (Final) ---");
 
-	composeApp();
+	composeBotPersona()();
 
 	// Используем нашу простую мок-функцию
 	const startNurturingMock = createMock();

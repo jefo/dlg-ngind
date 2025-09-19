@@ -1,7 +1,7 @@
 import { sendTelegramMessage } from "./telegram-api.client";
-import type { ComponentRenderDto } from "@bot-persona/src/runtime/dtos"; // Условный импорт, реальный путь будет настроен в tsconfig
-import type { MessageProps } from "@bot-persona/src/desing/domain/ui/message.entity";
-import type { ButtonGroupProps } from "@bot-persona/src/desing/domain/ui/button-group.entity";
+import type { ComponentRenderDto } from "@dlg-ngind/bot-persona/src/runtime/dtos";
+import type { MessageProps } from "@dlg-ngind/bot-persona/src/desing/domain/ui/message.entity";
+import type { ButtonGroupProps } from "@dlg-ngind/bot-persona/src/desing/domain/ui/button-group.entity";
 
 /**
  * Telegram Presenter - это адаптер для порта componentRenderOutPort.

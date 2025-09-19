@@ -43,3 +43,31 @@ export const messageSentOutPort =
 export const serviceStartedOutPort = createPort<(dto: { channel: string }) => Promise<void>>();
 export const serviceStartFailedOutPort = createPort<(dto: { channel: string, reason: string }) => Promise<void>>();
 export const serviceStoppedOutPort = createPort<(dto: { channel:string }) => Promise<void>>();
+
+// DTO для обработанного взаимодействия
+export const InteractionProcessedOutputSchema = z.object({
+	chatId: z.string(),
+	personaId: z.string(),
+	event: z.string(),
+	payload: z.record(z.string(), z.any()).optional(),
+});
+export type InteractionProcessedOutput = z.infer<typeof InteractionProcessedOutputSchema>;
+
+/**
+ * Сообщает системе о том, что произошло взаимодействие с пользователем (например, нажатие кнопки).
+ */
+export const interactionProcessedOutPort = createPort<(dto: InteractionProcessedOutput) => Promise<void>>();
+
+// DTO для полученного входящего сообщения
+export const IncomingMessageReceivedOutputSchema = z.object({
+	chatId: z.string(),
+	personaId: z.string(),
+	text: z.string(),
+});
+export type IncomingMessageReceivedOutput = z.infer<typeof IncomingMessageReceivedOutputSchema>;
+
+/**
+ * Сообщает системе о получении нового текстового сообщения от пользователя.
+ */
+export const incomingMessageReceivedOutPort = createPort<(dto: IncomingMessageReceivedOutput) => Promise<void>>();
+

@@ -1,5 +1,5 @@
 import { setPortAdapter } from "@maxdev1/sotajs";
-import { composeApp } from "./src/composition";
+import { composeBotPersonaApp } from "./src/composition";
 import { defineBotPersonaUseCase } from "./src/desing/application/define-bot-persona.use-case";
 import { botPersonaDefinedOutPort } from "./src/desing/application/ports";
 import { processUserInputUseCase } from "./src/runtime/application/process-user-input.use-case";
@@ -66,7 +66,7 @@ async function runGreeterTest() {
 	console.log("\n--- 🚀 Starting E2E Greeter Bot Test ---");
 
 	// 1. Собираем приложение со всеми стандартными зависимостями
-	composeApp();
+	composeBotPersonaApp();
 
 	// 2. Переопределяем порт для перехвата ID созданного бота.
 	// Это нужно делать ПОСЛЕ composeApp, чтобы наша подмена не была затерта.

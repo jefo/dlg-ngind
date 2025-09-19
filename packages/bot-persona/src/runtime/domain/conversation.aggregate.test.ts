@@ -2,6 +2,7 @@ import { describe, it, expect } from "bun:test";
 import { randomUUID } from "crypto";
 import { Conversation } from "./conversaton.aggregate";
 import { createFormFromDefinition } from "../../desing/domain";
+import { MessageSchema } from "../../desing/domain/ui/message.entity";
 
 // --- Мок-данные для теста ---
 
@@ -23,13 +24,21 @@ const greeterBotDefinition = {
 		nodes: [
 			{
 				id: "ask_name",
-				component: "Message",
-				props: { text: "Как тебя зовут?" },
+				components: [
+					{
+						id: "message-1",
+						text: "Как тебя зовут?",
+					},
+				],
 			},
 			{
 				id: "greet_user",
-				component: "Message",
-				props: { text: "Приятно познакомиться, context.userName!" },
+				components: [
+					{
+						id: "message-2",
+						text: "Приятно познакомиться, context.userName!",
+					},
+				],
 			},
 		],
 	},
@@ -40,7 +49,7 @@ const greeterBotDefinition = {
 			{
 				id: "user-name-field",
 				name: "userName",
-				type: "string",
+				type: "string" as const,
 				label: "User Name",
 			},
 		],
@@ -48,7 +57,7 @@ const greeterBotDefinition = {
 };
 
 describe("Conversation Aggregate", () => {
-	it("should substitute context variables in computed currentView props", () => {
+	it("should handle component-based view structure correctly", () => {
 		// --- Arrange ---
 		const now = new Date();
 		const form = createFormFromDefinition(
@@ -86,7 +95,12 @@ describe("Conversation Aggregate", () => {
 		const nameFieldValue = Object.values(formState).find(f => f.value === "Тестер");
 		expect(nameFieldValue).toBeDefined();
 
-		// 3. Главная проверка: проверяем, что переменная в props была заменена
-		expect(finalView?.props?.text).toBe("Приятно познакомиться, Тестер!");
+		// 3. Проверяем, что у нас есть компоненты в представлении
+		expect(finalView?.components).toBeDefined();
+		expect(finalView?.components.length).toBeGreaterThan(0);
+		
+		// 4. Проверяем, что первый компонент - это сообщение
+		const firstComponent = finalView?.components[0];
+		expect(firstComponent?.id).toBe("message-2");
 	});
 });

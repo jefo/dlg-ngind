@@ -7,7 +7,7 @@ import {
 } from "../../domain/chat.domain.ports";
 import { createChatUseCase } from "./create-chat.use-case";
 import { createPersonaUseCase } from "./create-persona.use-case";
-import { sendMessageUseCase } from "./send-message.use-case";
+import { incomingMessageReceivedOutPort } from "../chat.application.ports";
 
 // DTO для входящего сообщения, не зависящий от платформы
 const ReceiveMessageInputSchema = z.object({
@@ -20,7 +20,7 @@ const ReceiveMessageInputSchema = z.object({
 /**
  * Оркестрирующий Use Case.
  * Принимает сообщение, гарантирует наличие Персоны и Чата,
- * а затем передает управление в sendMessageUseCase.
+ * и уведомляет систему о новом сообщении через выходной порт.
  */
 export const receiveIncomingMessageUseCase = async (input: unknown) => {
 	const validInput = ReceiveMessageInputSchema.parse(input);
@@ -28,6 +28,7 @@ export const receiveIncomingMessageUseCase = async (input: unknown) => {
 	const findPersona = usePort(findPersonaByIdPort);
 	const findChat = usePort(findChatByIdPort);
 	const saveChat = usePort(saveChatPort);
+	const messageReceived = usePort(incomingMessageReceivedOutPort);
 
 	// 1. Убедимся, что Персона существует, или создадим ее
 	let persona = await findPersona(validInput.personaId);
@@ -50,8 +51,6 @@ export const receiveIncomingMessageUseCase = async (input: unknown) => {
 			title: "Telegram Chat", // Можно будет передавать из адаптера
 			participantIds: [validInput.personaId],
 		});
-		// Перезагружаем чат, чтобы иметь его в переменной
-		chat = await findChat(validInput.chatId);
 	} else {
 		// 3. Если чат существует, убедимся, что отправитель является его участником
 		if (chat && !chat.state.participantIds.includes(validInput.personaId)) {
@@ -63,10 +62,10 @@ export const receiveIncomingMessageUseCase = async (input: unknown) => {
 		}
 	}
 
-	// 4. Передаем управление основному use case для отправки сообщения
-	return await sendMessageUseCase({
+	// 4. Уведомляем систему о входящем сообщении
+	await messageReceived({
 		chatId: validInput.chatId,
-		senderId: validInput.personaId,
-		content: validInput.text,
+		personaId: validInput.personaId,
+		text: validInput.text,
 	});
 };

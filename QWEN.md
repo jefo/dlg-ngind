@@ -15,6 +15,7 @@ This is a TypeScript-based dialogue system framework called "dlg-ngind" that imp
 ```
 dlg-ngind/
 ├── packages/
+│   ├── booking/         # Appointment booking and scheduling functionality
 │   ├── bot-persona/     # Bot personality and design domain
 │   ├── chat/            # Chat functionality
 │   └── event-bus/       # Event handling system
@@ -22,6 +23,13 @@ dlg-ngind/
 ├── examples/            # Example implementations
 └── specs/               # Specifications
 ```
+
+### Package Entry Points
+Each package has its own entry point document for detailed information:
+- [Booking Context](./packages/booking/BOOKING.md) - Appointment scheduling functionality
+- [Bot Persona Context](./packages/bot-persona/BOT_PERSONA.md) - Bot personality and behavior management
+- [Chat Context](./packages/chat/CHAT.md) - Real-time messaging and conversation management
+- [Event Bus Context](./packages/event-bus/EVENT_BUS.md) - Event-driven communication infrastructure
 
 ## Key Components
 
@@ -118,6 +126,10 @@ The DI system is built on key functions:
 3. **playbook.md:** Roadmap for implementing the "Greeter Bot" scenario
 4. **nlu_course_plan.md:** Plan for Natural Language Understanding implementation
 5. **docs/architecture.md:** Overall project architecture documentation
+6. **packages/booking/BOOKING.md:** Entry point for the Booking context
+7. **packages/bot-persona/BOT_PERSONA.md:** Entry point for the Bot Persona context
+8. **packages/chat/CHAT.md:** Entry point for the Chat context
+9. **packages/event-bus/EVENT_BUS.md:** Entry point for the Event Bus context
 
 ## Getting Started
 

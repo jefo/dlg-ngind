@@ -39,15 +39,12 @@ import {
  * Функция для связывания всех портов с их реализациями (адаптерами).
  * Это сердце приложения, где происходит внедрение зависимостей.
  */
-export function composeApp() {
+export function composeBotPersonaApp() {
 	// Очищаем контейнер перед каждой композицией (важно для тестов)
-	resetDI();
+	// resetDI();
 
 	// --- Связывание портов данных ---
-	setPortAdapter(
-		findBotPersonaByIdPort,
-		inMemoryFindBotPersonaByIdAdapter,
-	);
+	setPortAdapter(findBotPersonaByIdPort, inMemoryFindBotPersonaByIdAdapter);
 	setPortAdapter(saveBotPersonaPort, inMemorySaveBotPersonaAdapter);
 	setPortAdapter(
 		findActiveConversationByChatIdPort,

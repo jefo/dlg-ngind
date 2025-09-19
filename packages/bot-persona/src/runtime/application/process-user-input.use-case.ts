@@ -74,11 +74,14 @@ export async function processUserInputUseCase(
 		// 6. Отправляем пользователю новое представление
 		const nextView = conversation.currentView;
 		if (nextView) {
-			await componentRender({
-				chatId: conversation.state.chatId,
-				componentName: nextView.component,
-				props: nextView.props ?? {},
-			});
+			// В новой системе компонентов мы отправляем весь массив компонентов
+			for (const component of nextView.components) {
+				await componentRender({
+					chatId: conversation.state.chatId,
+					componentName: component.id, // Используем id компонента как имя
+					props: component, // Передаем весь компонент как props
+				});
+			}
 		}
 
 		// 7. Если диалог завершился, уведомляем систему

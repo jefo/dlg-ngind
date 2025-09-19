@@ -6,8 +6,8 @@ import { createEntity } from "@maxdev1/sotajs";
 export const ButtonSchema = z.object({
   id: z.string().uuid(),
   label: z.string(),
-  event: z.string(),
-  payload: z.record(z.any()).optional(),
+  event: z.string().optional(),
+  payload: z.record(z.string(), z.any()).optional(),
 });
 
 export type ButtonProps = z.infer<typeof ButtonSchema>;
@@ -19,7 +19,6 @@ export type ButtonProps = z.infer<typeof ButtonSchema>;
  * Она инкапсулирует данные, необходимые для ее отображения и работы.
  */
 export const ButtonEntity = createEntity({
-  name: "Button",
   schema: ButtonSchema,
   actions: {
     // В будущем здесь могут быть действия, например, изменить label

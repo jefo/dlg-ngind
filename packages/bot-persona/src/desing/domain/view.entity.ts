@@ -8,7 +8,12 @@ import { ButtonGroupSchema } from "./ui/button-group.entity";
 // Узел отображения теперь может состоять из нескольких UI-компонентов
 export const ComponentDescriptorSchema = z.object({
 	id: z.string(), // ID состояния FSM, которому соответствует этот узел
-	components: z.array(z.union([MessageSchema, ButtonGroupSchema])),
+	components: z.array(
+		z.object({
+			message: MessageSchema.optional(),
+			buttonGroup: ButtonGroupSchema.optional(),
+		})
+	),
 });
 
 /**

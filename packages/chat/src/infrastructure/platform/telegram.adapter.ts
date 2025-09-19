@@ -1,19 +1,9 @@
-import { createPort, usePort } from "@maxdev1/sotajs";
 import type { ServiceLifecycleInput } from "../../application";
-import { receiveIncomingMessageUseCase } from "../../application/use-cases/receive-incoming-message.use-case";
+import {
+	receiveIncomingMessageUseCase,
+	processUserInteractionUseCase,
+} from "../../application/use-cases";
 import { getTelegramUpdates } from "./telegram-api.client";
-
-// --- Выходной порт, который адаптер использует для связи с оркестратором ---
-
-export const userInteractedOutPort = createPort<(
-	interaction: {
-		chatId: string;
-		personaId: string;
-		event: string;
-		payload?: Record<string, any>;
-	}
-) => Promise<void>>();
-
 
 // The state of our adapter. It holds the running process.
 interface AdapterState {
@@ -24,7 +14,7 @@ interface AdapterState {
 let state: AdapterState | null = null;
 
 /**
- * Transforms a raw Telegram update into our internal DTO and calls the correct use case or port.
+ * Transforms a raw Telegram update into our internal DTO and calls the correct use case.
  */
 async function handleTelegramUpdate(update: any) {
 	// 1. Обработка нажатия на инлайн-кнопку
@@ -38,11 +28,16 @@ async function handleTelegramUpdate(update: any) {
 				event,
 				payload,
 			};
-			console.log(`< [Adapter]: Received button click '${event}'. Routing to Orchestrator...`);
-			const userInteracted = usePort(userInteractedOutPort);
-			await userInteracted(interaction);
+			console.log(
+				`< [Adapter]: Received button click '${event}'. Routing to Application Core...`,
+			);
+			await processUserInteractionUseCase(interaction);
 		} catch (error) {
-			console.error("[Adapter]: Failed to parse callback_query data:", data, error);
+			console.error(
+				"[Adapter]: Failed to parse callback_query data:",
+				data,
+				error,
+			);
 		}
 		return;
 	}
@@ -57,10 +52,14 @@ async function handleTelegramUpdate(update: any) {
 			text: message.text,
 		};
 
-		console.log(`< [Adapter]: Received text message. Routing to Core...`);
-		// Для текстовых сообщений мы по-прежнему можем вызывать старый use case
+		console.log(
+			`< [Adapter]: Received text message. Routing to Application Core...`,
+		);
 		await receiveIncomingMessageUseCase(payload).catch((err) => {
-			console.error(`[Adapter]: Error processing text message for chat ${payload.chatId}:`, err);
+			console.error(
+				`[Adapter]: Error processing text message for chat ${payload.chatId}:`,
+				err,
+			);
 		});
 	}
 }
