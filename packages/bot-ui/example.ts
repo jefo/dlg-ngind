@@ -3,8 +3,17 @@ import { View } from './src/domain/components/view.aggregate.ts';
 import { MessageComponent, ButtonComponent, ProductCardComponent, BotProductCardComponent } from './src/domain/components/specific-components.value-objects.ts';
 import { renderViewUseCase } from './src/application/use-cases/render-view.use-case.ts';
 import { renderViewAdapter } from './src/infrastructure/adapters/render-view.adapter.ts';
+import { telegramViewPresentationAdapter } from './src/presentation/telegram/telegram.presenter.adapter.ts';
 import { setPortAdapter, resetDI } from '@maxdev1/sotajs';
-import { renderViewPort, viewRenderedOutPort, viewRenderingFailedOutPort } from './src/domain/ports.ts';
+import { 
+  renderViewPort, 
+  viewRenderedOutPort, 
+  viewRenderingFailedOutPort 
+} from './src/domain/ports.ts';
+import {
+  telegramViewPresentationPort,
+  telegramViewPresentationErrorPort
+} from './src/application/ports/presentation.ports.ts';
 
 // Функция для демонстрации использования
 async function demonstrateViewUsage() {
@@ -21,6 +30,13 @@ async function demonstrateViewUsage() {
   });
   setPortAdapter(viewRenderingFailedOutPort, async (error) => {
     console.log('❌ Ошибка рендеринга:');
+    console.log(error);
+  });
+  
+  // Регистрация презентационных адаптеров
+  setPortAdapter(telegramViewPresentationPort, telegramViewPresentationAdapter);
+  setPortAdapter(telegramViewPresentationErrorPort, async (error) => {
+    console.log('❌ Ошибка презентации в Telegram:');
     console.log(error);
   });
 
@@ -107,12 +123,13 @@ async function demonstrateViewUsage() {
   console.log(JSON.stringify(view.state, null, 2));
   console.log('\n');
 
-  // Рендеринг представления с контекстом
-  console.log('Рендеринг представления с контекстом { name: "Alice" }...\n');
+  // Рендеринг представления с контекстом для Telegram
+  console.log('Рендеринг представления с контекстом { name: "Alice" } для Telegram...\n');
   
   await renderViewUseCase({
     view: view.state,
-    context: { name: 'Alice' }
+    context: { name: 'Alice' },
+    platform: 'telegram'
   });
 }
 

@@ -31,6 +31,8 @@
 
 4. **Платформо-независимый рендеринг** — Подготовка универсального описания интерфейса, которое затем может быть адаптировано под любую платформу.
 
+5. **Слой презентации** — Преобразование универсального описания интерфейса в формат, понятный конкретной платформе (Telegram, Web и др.)
+
 ## 3. Взаимодействие с другими контекстами
 
 ### Входящие зависимости:
@@ -43,18 +45,6 @@
 
 Контекст разработан в соответствии с принципами **Domain-Driven Design** и **Гексагональной архитектуры** с использованием фреймворка **SotaJS**:
 
-### Доменная модель:
-- **Компоненты** — Атомарные элементы интерфейса (Value Objects)
-- **Представления** — Композитные структуры, определяющие компоновку интерфейса (Aggregates)
-
-### Поток управления:
-1. Внешний контекст запрашивает рендеринг представления
-2. Контекст получает шаблон и данные для персонализации
-3. Движок рендеринга гидратирует шаблон актуальными данными
-4. Результат возвращается в виде универсального описания интерфейса
-
-## 5. Техническая архитектура
-
 ### Уровни архитектуры:
 
 1. **Домен (`src/domain`):**
@@ -64,9 +54,14 @@
 
 2. **Приложение (`src/application`):**
    - **Use Cases:** Основной use case — `renderViewUseCase`, который оркестрирует процесс рендеринга
+   - **DTO (`dto/`):** Структуры данных для передачи между слоями
+   - **Порты презентации (`ports/`):** Контракты для слоя презентации
 
 3. **Инфраструктура (`src/infrastructure`):**
    - **Адаптеры (`adapters`):** Конкретная реализация порта рендеринга
+
+4. **Презентация (`src/presentation`):**
+   - **Адаптеры презентации:** Преобразование универсального описания в формат конкретной платформы
 
 ### Специализированные компоненты:
 
@@ -76,25 +71,56 @@
 4. **ProductCardComponent** - карточка товара с изображением, описанием, ценой и кнопкой "подробнее"
 5. **BotProductCardComponent** - карточка бота с названием модели, функциями, стоимостью, интеграциями и кнопкой "подробнее"
 
-## 6. Преимущества подхода
+## 5. Преимущества подхода
 
 ### Для бизнеса:
 - **Гибкость интерфейсов** — Возможность быстро создавать и модифицировать интерфейсы ботов
 - **Консистентность** — Единый подход к построению интерфейсов во всех каналах
 - **Персонализация** — Автоматическая адаптация интерфейсов под пользователей
+- **Мультиплатформенность** — Поддержка различных платформ с единой кодовой базой
 
 ### Для разработки:
 - **Тестируемость** — Все бизнес-правила изолированы и покрыты тестами
-- **Расширяемость** — Простое добавление новых типов компонентов и layout'ов
+- **Расширяемость** — Простое добавление новых типов компонентов, layout'ов и платформ
 - **Поддерживаемость** — Четкое разделение ответственности между слоями
+- **Типобезопасность** — Строгая типизация на всех уровнях
 
-## 7. Использование
+## 6. Использование
 
 Пример использования контекста:
 
 ```typescript
-import { View, MessageComponent, ButtonComponent, ProductCardComponent, BotProductCardComponent } from '@dlg-ngind/bot-ui';
+import { View } from '@dlg-ngind/bot-ui';
+import { MessageComponent, ButtonComponent, ProductCardComponent, BotProductCardComponent } from '@dlg-ngind/bot-ui';
 import { renderViewUseCase } from '@dlg-ngind/bot-ui/application';
+import { renderViewAdapter } from '@dlg-ngind/bot-ui/infrastructure';
+import { telegramViewPresentationAdapter } from '@dlg-ngind/bot-ui/presentation';
+import { setPortAdapter, resetDI } from '@maxdev1/sotajs';
+import { 
+  renderViewPort, 
+  viewRenderedOutPort, 
+  viewRenderingFailedOutPort 
+} from '@dlg-ngind/bot-ui/domain';
+import {
+  telegramViewPresentationPort,
+  telegramViewPresentationErrorPort
+} from '@dlg-ngind/bot-ui/application';
+
+// Настройка DI контейнера
+resetDI();
+setPortAdapter(renderViewPort, renderViewAdapter);
+setPortAdapter(viewRenderedOutPort, async (result) => {
+  console.log('Представление успешно отрендерено');
+});
+setPortAdapter(viewRenderingFailedOutPort, async (error) => {
+  console.log('Ошибка рендеринга:', error);
+});
+
+// Настройка презентационного слоя для Telegram
+setPortAdapter(telegramViewPresentationPort, telegramViewPresentationAdapter);
+setPortAdapter(telegramViewPresentationErrorPort, async (error) => {
+  console.log('Ошибка презентации в Telegram:', error);
+});
 
 // Создание компонентов
 const message = MessageComponent.create({
@@ -162,9 +188,10 @@ const view = View.create({
   components: [message, productCard, botProductCard, button]
 });
 
-// Рендеринг представления
+// Рендеринг представления для Telegram
 await renderViewUseCase({
   view: view.state,
-  context: { name: 'John' }
+  context: { name: 'John' },
+  platform: 'telegram' // Указываем платформу для презентации
 });
 ```
