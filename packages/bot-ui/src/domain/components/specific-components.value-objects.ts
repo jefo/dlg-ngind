@@ -20,7 +20,7 @@ const ButtonComponentSchema = z.object({
   props: z.object({
     text: z.string(),
     action: z.string(),
-    payload: z.record(z.unknown()).optional(),
+    payload: z.record(z.string(), z.unknown()).optional(),
   }),
 });
 

@@ -11,13 +11,13 @@ import {
   webViewPresentationPort,
   webViewPresentationErrorPort
 } from "../ports/presentation.ports.ts";
-import { RenderedView } from "../dto/ui.dto.ts";
+import type { RenderedView } from "../dto/ui.dto.ts";
 
 // DTO для входных данных use case
 const RenderViewUseCaseInputSchema = z.object({
   view: z.record(z.string(), z.unknown()),
   context: z.record(z.string(), z.unknown()),
-  platform?: z.enum(["telegram", "web"]), // Платформа для презентации
+  platform: z.enum(["telegram", "web"]).optional(), // Платформа для презентации
 });
 
 type RenderViewUseCaseInput = z.infer<typeof RenderViewUseCaseInputSchema>;
