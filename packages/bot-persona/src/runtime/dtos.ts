@@ -72,3 +72,33 @@ export type ComponentRenderDto = {
   props: Record<string, any>;
 };
 
+// --- DTO для компонентов представления ---
+
+export type ButtonDto = {
+  id: string;
+  label: string;
+  event?: string;
+  payload?: Record<string, any>;
+};
+
+export type ButtonGroupDto = {
+  id: string;
+  buttons: ButtonDto[];
+};
+
+export type MessageDto = {
+  id: string;
+  text: string;
+};
+
+export type ComponentWrapperDto = Record<string, MessageDto | ButtonGroupDto>;
+
+// Новый DTO для рендеринга всего представления
+export type ViewRenderDto = {
+  chatId: string;
+  viewNode: {
+    id: string;
+    components: ComponentWrapperDto[];
+  };
+};
+

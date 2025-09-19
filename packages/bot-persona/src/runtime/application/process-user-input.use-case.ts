@@ -5,7 +5,7 @@ import {
 	saveConversationPort,
 } from "../domain/conversaton.aggregate";
 import {
-	componentRenderOutPort,
+	viewRenderOutPort,
 	conversationFinishedOutPort,
 	conversationNotFoundOutPort,
 	invalidInputOutPort,
@@ -50,7 +50,7 @@ export async function processUserInputUseCase(
 	const saveConversation = usePort(saveConversationPort);
 	const conversationNotFound = usePort(conversationNotFoundOutPort);
 	const invalidInput = usePort(invalidInputOutPort);
-	const componentRender = usePort(componentRenderOutPort);
+	const viewRender = usePort(viewRenderOutPort);
 	const conversationFinished = usePort(conversationFinishedOutPort);
 
 	try {
@@ -68,24 +68,26 @@ export async function processUserInputUseCase(
 		// 4. Делегируем всю бизнес-логику агрегату
 		conversation.actions.applyEvent({ event, payload });
 
-		// 5. Сохраняем измененное состояние
+		// 5. Получаем все необходимые данные из агрегата ДО сохранения
+		const nextView = conversation.currentView;
+		const isFinished = conversation.isFinished;
+
+		// 6. Сохраняем измененное состояние (это аннулирует Proxy)
 		await saveConversation(conversation.state);
 
-		// 6. Отправляем пользователю новое представление
-		const nextView = conversation.currentView;
+		// 7. Отправляем пользователю новое представление, используя локальную переменную
 		if (nextView) {
-			// В новой системе компонентов мы отправляем весь массив компонентов
-			for (const component of nextView.components) {
-				await componentRender({
-					chatId: conversation.state.chatId,
-					componentName: component.id, // Используем id компонента как имя
-					props: component, // Передаем весь компонент как props
-				});
-			}
+			await viewRender({
+				chatId: chatId,
+				viewNode: {
+					id: nextView.id,
+					components: nextView.components,
+				},
+			});
 		}
 
-		// 7. Если диалог завершился, уведомляем систему
-		if (conversation.isFinished) {
+		// 8. Если диалог завершился, уведомляем систему
+		if (isFinished) {
 			await conversationFinished({ chatId });
 		}
 	} catch (error: any) {

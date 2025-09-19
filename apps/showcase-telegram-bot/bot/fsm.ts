@@ -21,27 +21,35 @@ export const fsmDefinition = {
 	],
 	transitions: [
 		{ from: "welcome", event: "START", to: "ask_name" },
+		// Allow both structured event and free text input for name
 		{ from: "ask_name", event: "SUBMIT_NAME", to: "ask_job", assign: { name: "payload.text" } },
-		{ from: "ask_job", event: "SUBMIT_JOBS", to: "ask_context", assign: { job: "payload.selection" } },
-		{ from: "ask_context", event: "SUBMIT_CONTEXTS", to: "ask_struggles", assign: { context: "payload.selection" } },
-		{ from: "ask_struggles", event: "SUBMIT_STRUGGLES", to: "ask_outcomes", assign: { struggles: "payload.text" } },
-		{ from: "ask_outcomes", event: "SUBMIT_OUTCOMES", to: "ask_extras", assign: { outcomes: "payload.text" } },
+		{ from: "ask_name", event: "text", to: "ask_job", assign: { name: "payload.text" } },
+		
+		// Накапливаем выбор пользователя в том же состоянии
+		{ from: "ask_job", event: "ADD_SELECTION", to: "ask_job", assign: { job: { op: "add", value: "payload.value" } } },
+		// Переходим дальше, когда пользователь нажал "Далее"
+		{ from: "ask_job", event: "SUBMIT_JOBS", to: "ask_context" },
+		
+		{ from: "ask_context", event: "ADD_SELECTION", to: "ask_context", assign: { context: { op: "add", value: "payload.value" } } },
+		{ from: "ask_context", event: "SUBMIT_CONTEXTS", to: "ask_struggles" },
+		{ from: "ask_struggles", event: "SUBMIT_STRUGGLES", to: "ask_outcomes", assign: { struggles: "payload.selection" } },
+		{ from: "ask_outcomes", event: "SUBMIT_OUTCOMES", to: "ask_extras", assign: { outcomes: "payload.selection" } },
 		{ from: "ask_extras", event: "SUBMIT_EXTRAS", to: "ask_timeline", assign: { extras: "payload.selection" } },
 		{ from: "ask_timeline", event: "SELECT_TIMELINE", to: "ask_budget", assign: { timeline: "payload.selection" } },
 
 		// Расчет пре-оффера и переход к его показу
 		{
 			from: "ask_budget",
-				event: "SELECT_BUDGET",
-				to: "pre_offer",
-				assign: { budget: "payload.selection", estimate: { price: "$1500-$2500", timeline: "4-6 недель" }, recommendedModel: "Бот для SaaS-триала" },
-				cond: { field: "extras", operator: "contains", value: "crm" },
+			event: "SELECT_BUDGET",
+			to: "pre_offer",
+			assign: { budget: "payload.selection", estimate: { price: "$1500-$2500", timeline: "4-6 недель" }, recommendedModel: "Бот для SaaS-триала" },
+			cond: { field: "extras", operator: "contains", value: "crm" },
 		},
 		{
 			from: "ask_budget",
-				event: "SELECT_BUDGET",
-				to: "pre_offer",
-				assign: { budget: "payload.selection", estimate: { price: "$800-$1200", timeline: "3-4 недели" }, recommendedModel: "Бот для вебинарной воронки" },
+			event: "SELECT_BUDGET",
+			to: "pre_offer",
+			assign: { budget: "payload.selection", estimate: { price: "$800-$1200", timeline: "3-4 недели" }, recommendedModel: "Бот для вебинарной воронки" },
 		},
 
 		// Ветвление после пре-оффера

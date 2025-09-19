@@ -1,14 +1,22 @@
 import { createPort } from "@maxdev1/sotajs";
 import type { FailureDto } from "../../shared/dtos";
 import type { ComponentRenderDto } from "../dtos";
+import type { ViewRenderDto } from "../dtos";
 
 // --- Выходные Порты (Output Ports) для под-домена Runtime ---
 
 /**
  * Сообщает о необходимости отрендерить компонент для пользователя.
+ * @deprecated Используйте viewRenderOutPort вместо этого.
  */
 export const componentRenderOutPort =
 	createPort<(dto: ComponentRenderDto) => Promise<void>>();
+
+/**
+ * Сообщает о необходимости отрендерить всё представление (все компоненты для состояния FSM).
+ */
+export const viewRenderOutPort =
+	createPort<(dto: ViewRenderDto) => Promise<void>>();
 
 /**
  * Сообщает о завершении диалога.

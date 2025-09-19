@@ -10,9 +10,9 @@ export const ComponentDescriptorSchema = z.object({
 	id: z.string(), // ID состояния FSM, которому соответствует этот узел
 	components: z.array(
 		z.object({
-			message: MessageSchema.optional(),
+			message: MessageSchema,
 			buttonGroup: ButtonGroupSchema.optional(),
-		})
+		}),
 	),
 });
 

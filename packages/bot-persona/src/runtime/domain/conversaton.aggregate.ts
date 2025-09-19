@@ -46,13 +46,13 @@ export const Conversation = createAggregate({
 	computed: {
 		isActive: (state) => state.status === "active",
 		isFinished: (state) => state.status === "finished",
-		currentView: (state): ComponentDescriptor | null => {
+		currentView: (state): ComponentDescriptor => {
 			const viewNode = state.viewDefinition.nodes.find(
 				(n) => n.id === state.currentStateId,
 			);
-			if (!viewNode) return null;
+			if (!viewNode)
+				throw new Error("Current state not found in view definition");
 
-			// В новой системе компонентов мы просто возвращаем весь дескриптор компонента
 			return viewNode;
 		},
 	},
@@ -125,14 +125,28 @@ export const Conversation = createAggregate({
 						if (payload && payloadKey in payload) {
 							valueToSet = payload[payloadKey];
 						}
+					// --- НАЧАЛО ИЗМЕНЕНИЯ: Обработка мультивыбора ---
+					} else if (typeof payloadExpr === 'object' && !Array.isArray(payloadExpr) && payloadExpr !== null && 'op' in payloadExpr && payloadExpr.op === 'add') {
+						const fieldState = state.form.state.formState[field.id];
+						const currentArray = Array.isArray(fieldState?.value) ? fieldState.value : [];
+						const valueToAdd = (payloadExpr as any).value.startsWith('payload.') 
+							? payload?.[(payloadExpr as any).value.substring(8)] 
+							: (payloadExpr as any).value;
+						
+						if (valueToAdd !== undefined) {
+							valueToSet = [...currentArray, valueToAdd];
+						}
+					// --- КОНЕЦ ИЗМЕНЕНИЯ ---
 					} else {
 						valueToSet = payloadExpr;
 					}
 
-					state.form.actions.setFieldValue({
-						fieldId: field.id,
-						value: valueToSet,
-					});
+					if (valueToSet !== undefined) {
+						state.form.actions.setFieldValue({
+							fieldId: field.id,
+							value: valueToSet,
+						});
+					}
 				}
 			}
 

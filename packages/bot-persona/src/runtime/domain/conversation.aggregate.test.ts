@@ -104,3 +104,79 @@ describe("Conversation Aggregate", () => {
 		expect(firstComponent?.id).toBe("message-2");
 	});
 });
+
+// --- Новый набор тестов для мультивыбора ---
+
+const multiSelectBotDefinition = {
+	name: "Multi-Select Bot",
+	fsmDefinition: {
+		initialStateId: "ask_job",
+		states: [{ id: "ask_job" }, { id: "ask_context" }],
+		transitions: [
+			{ from: "ask_job", event: "ADD_SELECTION", to: "ask_job", assign: { job: { op: "add", value: "payload.value" } } },
+			{ from: "ask_job", event: "SUBMIT_JOBS", to: "ask_context" },
+		],
+	},
+	viewDefinition: {
+		nodes: [
+			{ id: "ask_job", components: [{ id: "msg-job", text: "Select jobs" }] },
+			{ id: "ask_context", components: [{ id: "msg-context", text: "Select context" }] },
+		],
+	},
+	formDefinition: {
+		id: "multiselect-form",
+		name: "Multi-Select Form",
+		fields: [
+			{ id: "job-field", name: "job", type: "string[]" as const, label: "Job" },
+		],
+	},
+};
+
+describe("Conversation Aggregate - Multi-Select Logic", () => {
+	it("should accumulate values with ADD_SELECTION and then transition with SUBMIT", () => {
+		// --- Arrange ---
+		const now = new Date();
+		const form = createFormFromDefinition(multiSelectBotDefinition.formDefinition, randomUUID());
+
+		const conversation = Conversation.create({
+			id: randomUUID(),
+			botPersonaId: randomUUID(),
+			chatId: "multi-select-test",
+			status: "active",
+			currentStateId: "ask_job",
+			form: form.state,
+			fsmDefinition: multiSelectBotDefinition.fsmDefinition,
+			viewDefinition: multiSelectBotDefinition.viewDefinition,
+			createdAt: now,
+			updatedAt: now,
+		});
+
+		// --- Act 1: Add first selection ---
+		conversation.actions.applyEvent({
+			event: "ADD_SELECTION",
+			payload: { value: "qualification" },
+		});
+
+		// --- Assert 1 ---
+		expect(conversation.state.currentStateId).toBe("ask_job"); // Состояние не должно было измениться
+		let jobFieldValue = conversation.state.form.formState["job-field"]?.value;
+		expect(jobFieldValue).toEqual(["qualification"]);
+
+		// --- Act 2: Add second selection ---
+		conversation.actions.applyEvent({
+			event: "ADD_SELECTION",
+			payload: { value: "support" },
+		});
+
+		// --- Assert 2 ---
+		expect(conversation.state.currentStateId).toBe("ask_job"); // Состояние все еще не меняется
+		jobFieldValue = conversation.state.form.formState["job-field"]?.value;
+		expect(jobFieldValue).toEqual(["qualification", "support"]);
+
+		// --- Act 3: Submit ---
+		conversation.actions.applyEvent({ event: "SUBMIT_JOBS" });
+
+		// --- Assert 3 ---
+		expect(conversation.state.currentStateId).toBe("ask_context"); // Теперь состояние должно измениться
+	});
+});

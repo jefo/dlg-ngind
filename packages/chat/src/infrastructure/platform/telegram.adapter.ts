@@ -3,12 +3,13 @@ import {
 	receiveIncomingMessageUseCase,
 	processUserInteractionUseCase,
 } from "../../application/use-cases";
-import { getTelegramUpdates } from "./telegram-api.client";
+import { getTelegramUpdates, getMe } from "./telegram-api.client";
 
-// The state of our adapter. It holds the running process.
+// The state of our adapter. It holds the running process and bot info.
 interface AdapterState {
 	stop: () => void; // A function to stop the polling loop
 	isRunning: boolean;
+	botId: number | null;
 }
 
 let state: AdapterState | null = null;
@@ -45,6 +46,12 @@ async function handleTelegramUpdate(update: any) {
 	// 2. Обработка обычного текстового сообщения
 	if (update.message && update.message.text) {
 		const { message } = update;
+
+		// >>> ГЛАВНОЕ ИЗМЕНЕНИЕ: Игнорируем сообщения от самого бота <<<
+		if (state?.botId && message.from.id === state.botId) {
+			return; // Не обрабатываем свои же сообщения
+		}
+
 		const payload = {
 			chatId: `telegram:${message.chat.id}`,
 			personaId: `telegram:${message.from.id}`,
@@ -84,7 +91,6 @@ async function runPollingLoop(
 			}
 		} catch (error) {
 			console.error("[Adapter]: Error in polling loop:", error);
-			// Don't hammer the API on failure
 			await new Promise((resolve) => setTimeout(resolve, 10000));
 		}
 	}
@@ -106,10 +112,17 @@ export const telegramStartListeningAdapter = async (
 		throw new Error("Telegram adapter requires a 'token' in config.");
 	}
 
+	// Получаем информацию о боте, чтобы знать его ID
+	const botInfo = await getMe(token);
+	console.log(
+		`[Adapter]: Operating as bot "${botInfo.name}" (ID: ${botInfo.id})`,
+	);
+
 	const controller = { isRunning: true };
 
 	state = {
 		isRunning: true,
+		botId: botInfo.id,
 		stop: () => {
 			if (controller.isRunning) {
 				console.log("[Adapter]: Stopping Telegram polling...");
@@ -118,7 +131,6 @@ export const telegramStartListeningAdapter = async (
 		},
 	};
 
-	// We don't await this, as it's a long-running process.
 	runPollingLoop(token, controller);
 };
 

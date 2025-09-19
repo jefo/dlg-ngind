@@ -7,14 +7,20 @@ export async function sendTelegramMessage(
 	chatId: number,
 	text: string,
 	token: string,
+	reply_markup?: any,
 ): Promise<void> {
 	console.log(`> Sending message to ${chatId}...`);
+	const requestBody: any = { chat_id: chatId, text };
+	if (reply_markup) {
+		requestBody.reply_markup = reply_markup;
+	}
+	
 	const response = await fetch(`${BASE_URL}${token}/sendMessage`, {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
 		},
-		body: JSON.stringify({ chat_id: chatId, text }),
+		body: JSON.stringify(requestBody),
 	});
 
 	if (!response.ok) {
@@ -49,4 +55,19 @@ export async function getTelegramUpdates(
 
 	const data: any = await response.json();
 	return data.result || [];
+}
+
+/**
+ * Получает информацию о самом боте (используется для получения ID бота).
+ */
+export async function getMe(token: string): Promise<{ id: number; name: string }> {
+	const response = await fetch(`${BASE_URL}${token}/getMe`);
+	if (!response.ok) {
+		throw new Error(`Failed to get bot info: ${response.statusText}`);
+	}
+	const data: any = await response.json();
+	return {
+		id: data.result.id,
+		name: data.result.first_name,
+	};
 }

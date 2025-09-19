@@ -1,37 +1,45 @@
 import { sendTelegramMessage } from "./telegram-api.client";
-import type { ComponentRenderDto } from "@dlg-ngind/bot-persona/src/runtime/dtos";
-import type { MessageProps } from "@dlg-ngind/bot-persona/src/desing/domain/ui/message.entity";
-import type { ButtonGroupProps } from "@dlg-ngind/bot-persona/src/desing/domain/ui/button-group.entity";
+import type { ViewRenderDto } from "@dlg-ngind/bot-persona/src/runtime/dtos";
+import type { MessageDto, ButtonGroupDto } from "@dlg-ngind/bot-persona/src/runtime/dtos";
 
 /** 
- * Telegram Presenter - это адаптер для порта componentRenderOutPort.
+ * Telegram Presenter - это адаптер для порта viewRenderOutPort.
  * Он отвечает за преобразование платформо-независимых UI-сущностей
  * в нативные элементы управления Telegram.
  */
-export async function telegramPresenterAdapter(dto: ComponentRenderDto): Promise<void> {
-  // В новой системе мы получаем компоненты по одному, с уже объединенными кнопками
-  const { chatId, componentName, props } = dto;
+export async function telegramPresenterAdapter(dto: ViewRenderDto): Promise<void> {
+  const { chatId, viewNode } = dto;
+  
+  // Нам нужно найти сообщение и кнопки в компонентах
+  let messageText = "";
+  let buttons: any[] = [];
 
-  // Проверяем, что это сообщение - только сообщения мы отправляем напрямую
-  if (componentName !== 'message' && componentName !== 'Message') {
-    // Для других компонентов мы ничего не делаем,
-    // так как кнопки отправляются вместе с сообщением
-    return;
+  // Проходим по всем компонентам в viewNode
+  for (const componentWrapper of viewNode.components) {
+    // Проходим по всем компонентам в обертке
+    for (const [componentType, componentProps] of Object.entries(componentWrapper)) {
+      if (componentType === 'message' && componentProps && typeof componentProps === 'object' && 'text' in componentProps) {
+        // Это сообщение
+        messageText = (componentProps as MessageDto).text;
+      } else if (componentType === 'buttonGroup' && componentProps && typeof componentProps === 'object' && 'buttons' in componentProps) {
+        // Это группа кнопок
+        buttons = (componentProps as ButtonGroupDto).buttons;
+      }
+    }
   }
 
-  // Извлекаем текст сообщения
-  const messageText = props.text;
+  // Если нет сообщения, нечего отправлять
   if (!messageText) {
-    console.error("[Presenter] Error: No text found in message component.");
+    console.error("[Presenter] Error: No message component found to render.");
     return;
   }
 
   // Формируем нативный UI для Telegram
   let reply_markup: any = {};
 
-  // Если есть кнопки в props, формируем их
-  if (props.buttons && Array.isArray(props.buttons) && props.buttons.length > 0) {
-    const inline_keyboard = props.buttons.map(button => ({
+  // Если есть кнопки, формируем их
+  if (buttons.length > 0) {
+    const inline_keyboard = buttons.map(button => ({
       text: button.label,
       // Важно: превращаем event и payload в строку, чтобы передать через callback_data
       callback_data: JSON.stringify({ event: button.event, payload: button.payload || {} }),
