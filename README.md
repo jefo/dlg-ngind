@@ -14,6 +14,7 @@ Implementing a lead qualification bot for our kwork custom bot development servi
 
 ## New Bounded Contexts
 - `packages/booking` - Booking context for appointment scheduling
+- `packages/bot-ui` - UI rendering context for dialogue interfaces
 - Future integration with `@packages/bot-persona` for complete booking bot solution
 
 ## Immediate Goal

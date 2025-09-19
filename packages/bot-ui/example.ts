@@ -1,6 +1,6 @@
 // Пример использования представлений
 import { View } from './src/domain/components/view.aggregate.ts';
-import { MessageComponent, ButtonComponent } from './src/domain/components/specific-components.value-objects.ts';
+import { MessageComponent, ButtonComponent, ProductCardComponent, BotProductCardComponent } from './src/domain/components/specific-components.value-objects.ts';
 import { renderViewUseCase } from './src/application/use-cases/render-view.use-case.ts';
 import { renderViewAdapter } from './src/infrastructure/adapters/render-view.adapter.ts';
 import { setPortAdapter, resetDI } from '@maxdev1/sotajs';
@@ -29,8 +29,47 @@ async function demonstrateViewUsage() {
     id: 'msg1',
     type: 'message',
     props: {
-      text: 'Hello, {{name}}! Welcome to our service.',
+      text: 'Hello, {{name}}! Welcome to our store.',
       variant: 'info'
+    }
+  });
+
+  // Создание карточки товара
+  const productCard = ProductCardComponent.create({
+    id: 'product1',
+    type: 'product-card',
+    props: {
+      title: 'Ноутбук',
+      description: 'Мощный игровой ноутбук с процессором Intel Core i7 и видеокартой RTX 3080',
+      imageUrl: 'https://example.com/laptop.jpg',
+      price: 99999,
+      currency: 'RUB',
+      actionText: 'Подробнее',
+      action: 'view_product_details'
+    }
+  });
+
+  // Создание карточки бота
+  const botProductCard = BotProductCardComponent.create({
+    id: 'bot1',
+    type: 'bot-product-card',
+    props: {
+      modelName: 'Sales Assistant Pro',
+      features: [
+        'Автоматическая квалификация лида',
+        'Интеграция с CRM',
+        'Многоканальная поддержка'
+      ],
+      price: 29900,
+      currency: 'RUB',
+      integrations: [
+        'Telegram',
+        'WhatsApp',
+        'Slack',
+        'CRM Systems'
+      ],
+      actionText: 'Подробнее',
+      action: 'view_bot_details'
     }
   });
 
@@ -59,9 +98,9 @@ async function demonstrateViewUsage() {
   const view = View.create({
     id: 'view1',
     name: 'welcome',
-    description: 'Welcome screen with greeting message and action buttons',
+    description: 'Welcome screen with greeting message and product cards',
     layout: 'vertical',
-    components: [message.props, button.props, secondButton.props]
+    components: [message.props, productCard.props, botProductCard.props, button.props, secondButton.props]
   });
 
   console.log('Создано представление:');

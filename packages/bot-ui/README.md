@@ -14,6 +14,8 @@
    - Сообщения (Messages) с различными стилями
    - Кнопки действий (Buttons) 
    - Карточки с информацией (Cards)
+   - Карточки товаров (Product Cards) с изображением, описанием и ценой
+   - Карточки ботов (Bot Product Cards) с функциями, стоимостью и интеграциями
    - Галереи изображений (Carousels)
    - И другие UI-элементы
 
@@ -39,7 +41,7 @@
 
 ## 4. Архитектурный подход
 
-Контекст разработан в соответствии с принципами **Domain-Driven Design** и **Гексагональной ахитектуры**:
+Контекст разработан в соответствии с принципами **Domain-Driven Design** и **Гексагональной архитектуры** с использованием фреймворка **SotaJS**:
 
 ### Доменная модель:
 - **Компоненты** — Атомарные элементы интерфейса (Value Objects)
@@ -51,7 +53,30 @@
 3. Движок рендеринга гидратирует шаблон актуальными данными
 4. Результат возвращается в виде универсального описания интерфейса
 
-## 5. Преимущества подхода
+## 5. Техническая архитектура
+
+### Уровни архитектуры:
+
+1. **Домен (`src/domain`):**
+   - **Компоненты (`components`):** Схемы и типы для всех UI-компонентов как объектов-значений
+   - **Представления (`view.aggregate.ts`):** Агрегаты, определяющие компоновку компонентов и layout
+   - **Порты (`ports.ts`):** Абстрактные контракты для движка шаблонизации и выходные порты
+
+2. **Приложение (`src/application`):**
+   - **Use Cases:** Основной use case — `renderViewUseCase`, который оркестрирует процесс рендеринга
+
+3. **Инфраструктура (`src/infrastructure`):**
+   - **Адаптеры (`adapters`):** Конкретная реализация порта рендеринга
+
+### Специализированные компоненты:
+
+1. **MessageComponent** - текстовое сообщение с вариантами оформления
+2. **ButtonComponent** - интерактивная кнопка с действием
+3. **CardComponent** - карточка с заголовком, описанием и изображением
+4. **ProductCardComponent** - карточка товара с изображением, описанием, ценой и кнопкой "подробнее"
+5. **BotProductCardComponent** - карточка бота с названием модели, функциями, стоимостью, интеграциями и кнопкой "подробнее"
+
+## 6. Преимущества подхода
 
 ### Для бизнеса:
 - **Гибкость интерфейсов** — Возможность быстро создавать и модифицировать интерфейсы ботов
@@ -62,3 +87,84 @@
 - **Тестируемость** — Все бизнес-правила изолированы и покрыты тестами
 - **Расширяемость** — Простое добавление новых типов компонентов и layout'ов
 - **Поддерживаемость** — Четкое разделение ответственности между слоями
+
+## 7. Использование
+
+Пример использования контекста:
+
+```typescript
+import { View, MessageComponent, ButtonComponent, ProductCardComponent, BotProductCardComponent } from '@dlg-ngind/bot-ui';
+import { renderViewUseCase } from '@dlg-ngind/bot-ui/application';
+
+// Создание компонентов
+const message = MessageComponent.create({
+  id: 'msg1',
+  type: 'message',
+  props: {
+    text: 'Hello, {{name}}!',
+    variant: 'info'
+  }
+});
+
+// Создание карточки товара
+const productCard = ProductCardComponent.create({
+  id: 'product1',
+  type: 'product-card',
+  props: {
+    title: 'Ноутбук',
+    description: 'Мощный игровой ноутбук',
+    imageUrl: 'https://example.com/laptop.jpg',
+    price: 99999,
+    currency: 'RUB',
+    actionText: 'Подробнее',
+    action: 'view_product'
+  }
+});
+
+// Создание карточки бота
+const botProductCard = BotProductCardComponent.create({
+  id: 'bot1',
+  type: 'bot-product-card',
+  props: {
+    modelName: 'Sales Assistant Pro',
+    features: [
+      'Автоматическая квалификация лида',
+      'Интеграция с CRM',
+      'Многоканальная поддержка'
+    ],
+    price: 29900,
+    currency: 'RUB',
+    integrations: [
+      'Telegram',
+      'WhatsApp',
+      'Slack',
+      'CRM Systems'
+    ],
+    actionText: 'Подробнее',
+    action: 'view_bot_details'
+  }
+});
+
+const button = ButtonComponent.create({
+  id: 'btn1',
+  type: 'button',
+  props: {
+    text: 'Click me',
+    action: 'click'
+  }
+});
+
+// Создание представления
+const view = View.create({
+  id: 'view1',
+  name: 'greeting',
+  layout: 'vertical',
+  components: [message, productCard, botProductCard, button]
+});
+
+// Рендеринг представления
+await renderViewUseCase({
+  view: view.state,
+  context: { name: 'John' }
+});
+```

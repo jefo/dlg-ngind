@@ -27,6 +27,7 @@ Implement a lead qualification bot using existing `@packages/bot-persona` FSM en
 
 ## 4. Integration
 - Integrate with `@chat` for messaging platform support
+- Integrate with `@bot-ui` for rich interface components
 - Configure lead data export/capture mechanism with scoring
 - Set up analytics tracking for conversion rates
 - Implement consultation booking integration (Calendly or similar)
