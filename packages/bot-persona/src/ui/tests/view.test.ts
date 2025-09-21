@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'bun:test';
-import { View } from '../src/domain/components/view.aggregate.ts';
-import { MessageComponent } from '../src/domain/components/specific-components.value-objects.ts';
+import { View } from '../domain/components/view.entity.ts';
+import { MessageComponent } from '../domain/components/specific-components.value-objects.ts';
 
 describe('View Aggregate', () => {
   it('should create a view', () => {

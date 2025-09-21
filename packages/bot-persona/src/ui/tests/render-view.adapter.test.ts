@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'bun:test';
-import { renderViewAdapter } from '../src/infrastructure/adapters/render-view.adapter.ts';
+import { renderViewAdapter } from '../infrastructure/adapters/render-view.adapter.ts';
 
 describe('Render View Adapter', () => {
   it('should hydrate a view with context data', async () => {

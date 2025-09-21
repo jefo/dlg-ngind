@@ -1,6 +1,6 @@
 import { describe, it, expect } from "bun:test";
-import { telegramViewPresentationAdapter } from "../src/presentation/telegram/telegram.presenter.adapter.ts";
-import type { RenderedView } from "../src/application/dto/ui.dto.ts";
+import { telegramViewPresentationAdapter } from "../presentation/telegram/telegram.presenter.adapter.ts";
+import type { RenderedView } from "../application/dto/ui.dto.ts";
 
 describe("Telegram View Presentation Adapter", () => {
 	it("should format a simple message component", async () => {

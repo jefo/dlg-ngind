@@ -1,11 +1,11 @@
 import { describe, it, expect, spyOn, beforeEach } from "bun:test";
-import { renderViewUseCase } from "../src/application/use-cases/render-view.use-case.ts";
+import { renderViewUseCase } from "../application/use-cases/render-view.use-case.ts";
 import { setPortAdapter, resetDI } from "@maxdev1/sotajs";
 import {
 	renderViewPort,
 	viewRenderedOutPort,
 	viewRenderingFailedOutPort,
-} from "../src/domain/ports.ts";
+} from "../domain/ports.ts";
 
 describe("Render View Use Case", () => {
 	beforeEach(() => {

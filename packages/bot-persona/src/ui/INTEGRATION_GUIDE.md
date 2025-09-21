@@ -46,45 +46,16 @@ const welcomeView = View.create({
 
 ## Интеграция с `bot-persona`
 
-### Использование в FSM
-
-В конечном автомате бота можно использовать представления для определения интерфейса каждого состояния:
-
-```typescript
-// В определении FSM
-const fsmDefinition = {
-  states: {
-    welcome: {
-      view: welcomeView.state, // Используем представление
-      transitions: {
-        start_onboarding: 'onboarding'
-      }
-    },
-    onboarding: {
-      // Другие состояния...
-    }
-  }
-};
-```
-
 ### Рендеринг в Use Cases
 
 Когда бот переходит в новое состояние, он может запрашивать рендеринг представления:
 
 ```typescript
-// В use case бота
-const renderCurrentView = async (currentState, userData) => {
-  const view = currentState.view;
-  const context = {
-    userName: userData.name,
-    ...userData
-  };
-  
-  await renderViewUseCase({
-    view,
-    context
-  });
-};
+// presentation layer for telegram platform
+await renderViewUseCase({
+  view,
+  context
+});
 ```
 
 ## Примеры использования

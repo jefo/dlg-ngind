@@ -2,12 +2,15 @@ import { createAggregate, createPort } from "@maxdev1/sotajs";
 import { z } from "zod";
 import { FormDefinitionSchema, type FormDefinition } from "./form.entity";
 import { FsmDefinitionSchema, type FsmDefinition } from "./fsm.entity";
-import { ViewDefinitionSchema, type ViewDefinition } from "./view.entity";
+import {
+	ViewDefinitionSchema,
+	type ViewDefinition,
+} from "./view-definition.entity";
 
 // --- Схема Агрегата ---
 
 const BotPersonaPropsSchema = z.object({
-	id: z.string().uuid(),
+	id: z.string(),
 	name: z.string().min(1, "Bot name cannot be empty"),
 	fsmDefinition: FsmDefinitionSchema,
 	viewDefinition: ViewDefinitionSchema,
