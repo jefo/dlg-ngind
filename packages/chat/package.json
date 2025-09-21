@@ -8,6 +8,6 @@
     "@types/bun": "latest"
   },
   "dependencies": {
-    "@maxdev1/sotajs": "^0.2.1"
+    "@maxdev1/sotajs": "^0.3.0"
   }
 }

@@ -1,4 +1,4 @@
-import { resetDI, setPortAdapter } from '@maxdev1/sotajs/lib/di.v2';
+import { resetDI, setPortAdapter } from '@maxdev1/sotajs';
 import { sendTelegramMessage } from './src/telegram-api.client';
 import { runTelegramAdapter } from './src/telegram.adapter';
 import type { PersonaEntity, PersonaEntityType } from './src/persona.entity';

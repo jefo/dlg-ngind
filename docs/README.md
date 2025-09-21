@@ -176,7 +176,7 @@ Use Case — это `async` функция, которая является то
 **Пример: `createOrderUseCase`**
 ```typescript
 import { z } from 'zod';
-import { usePort, createPort } from '@maxdev1/sotajs/lib/di.v2';
+import { usePort, createPort } from '@maxdev1/sotajs';
 import { findUserByIdPort, saveOrderPort } from '@domain/ports';
 import { Order } from '@domain/order.aggregate';
 

@@ -36,14 +36,6 @@ async function main() {
 
 	// --- Настраиваем порты ввода (как bot-persona получает сообщения) ---
 
-	// Канал 1: Обработка нажатий на кнопки (интеракции)
-	setPortAdapter(interactionProcessedOutPort, async (interaction) => {
-		console.log(
-			`[Orchestrator]: Got interaction from @chat, routing to @bot-persona...`,
-		);
-		await processUserInputUseCase(interaction);
-	});
-
 	// Канал 2: Обработка текстовых сообщений
 	setPortAdapter(incomingMessageReceivedOutPort, async (message) => {
 		console.log(
@@ -56,6 +48,16 @@ async function main() {
 			payload: { text: message.text },
 		});
 	});
+	
+	// Канал 1: Обработка нажатий на кнопки (интеракции)
+	setPortAdapter(interactionProcessedOutPort, async (interaction) => {
+		console.log(
+			`[Orchestrator]: Got interaction from @chat, routing to @bot-persona...`,
+		);
+		await processUserInputUseCase(interaction);
+	});
+
+
 
 	// 3. Определяем и запускаем нашего бота
 	let botPersonaId: string = "";
