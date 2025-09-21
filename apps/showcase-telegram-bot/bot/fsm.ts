@@ -21,6 +21,8 @@ export const fsmDefinition = {
 	],
 	transitions: [
 		{ from: "welcome", event: "START", to: "ask_name" },
+		// Allow text input in welcome state to start the conversation
+		{ from: "welcome", event: "text", to: "ask_name" },
 		// Allow both structured event and free text input for name
 		{ from: "ask_name", event: "SUBMIT_NAME", to: "ask_job", assign: { name: "payload.text" } },
 		{ from: "ask_name", event: "text", to: "ask_job", assign: { name: "payload.text" } },

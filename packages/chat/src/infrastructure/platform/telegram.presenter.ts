@@ -1,6 +1,5 @@
 import { sendTelegramMessage } from "./telegram-api.client";
 import type { ViewRenderDto } from "@dlg-ngind/bot-persona/src/runtime/dtos";
-import type { MessageDto, ButtonGroupDto } from "@dlg-ngind/bot-persona/src/runtime/dtos";
 
 /** 
  * Telegram Presenter - это адаптер для порта viewRenderOutPort.
@@ -15,16 +14,18 @@ export async function telegramPresenterAdapter(dto: ViewRenderDto): Promise<void
   let buttons: any[] = [];
 
   // Проходим по всем компонентам в viewNode
-  for (const componentWrapper of viewNode.components) {
-    // Проходим по всем компонентам в обертке
-    for (const [componentType, componentProps] of Object.entries(componentWrapper)) {
-      if (componentType === 'message' && componentProps && typeof componentProps === 'object' && 'text' in componentProps) {
-        // Это сообщение
-        messageText = (componentProps as MessageDto).text;
-      } else if (componentType === 'buttonGroup' && componentProps && typeof componentProps === 'object' && 'buttons' in componentProps) {
-        // Это группа кнопок
-        buttons = (componentProps as ButtonGroupDto).buttons;
-      }
+  for (const component of viewNode.components) {
+    // Проверяем тип компонента
+    if (component.type === 'message' && component.props && typeof component.props === 'object' && 'text' in component.props) {
+      // Это сообщение
+      messageText = component.props.text;
+    } else if (component.type === 'button' && component.props && typeof component.props === 'object' && 'text' in component.props) {
+      // Это кнопка
+      buttons.push({
+        label: component.props.text,
+        event: component.props.action,
+        payload: component.props.payload || {}
+      });
     }
   }
 

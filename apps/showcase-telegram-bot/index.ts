@@ -8,12 +8,16 @@ import {
 	startChatServiceUseCase,
 } from "@dlg-ngind/chat/src/application";
 import { processUserInputUseCase } from "@dlg-ngind/bot-persona/src/runtime/application";
-import { telegramPresenterAdapter } from "@dlg-ngind/chat/src/infrastructure";
 import {
 	botPersonaDefinedOutPort,
 	defineBotPersonaUseCase,
 } from "@dlg-ngind/bot-persona/src/desing/application";
 import { viewRenderOutPort } from "@dlg-ngind/bot-persona/src/runtime/application/ports";
+import {
+	telegramViewPresentationPort,
+	telegramViewPresentationErrorPort,
+} from "@dlg-ngind/bot-persona/src/ui/application/ports/presentation.ports.ts";
+import { telegramViewPresentationAdapter } from "@dlg-ngind/bot-persona/src/ui/presentation/telegram/telegram.presenter.adapter.ts";
 
 async function main() {
 	console.log("🚀 Starting Showcase Telegram Bot...");
@@ -23,7 +27,12 @@ async function main() {
 	composeBotPersonaApp();
 
 	// --- Настраиваем порты вывода (как bot-persona отправляет сообщения) ---
-	setPortAdapter(viewRenderOutPort, telegramPresenterAdapter);
+	// TODO: do not use mass setPortAdapters - doest not works
+
+	setPortAdapter(telegramViewPresentationPort, telegramViewPresentationAdapter);
+	setPortAdapter(telegramViewPresentationErrorPort, async (error) => {
+		console.error("[Telegram Presenter] Error:", error.message);
+	});
 
 	// --- Настраиваем порты ввода (как bot-persona получает сообщения) ---
 

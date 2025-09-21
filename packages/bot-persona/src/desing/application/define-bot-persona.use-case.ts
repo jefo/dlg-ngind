@@ -28,6 +28,78 @@ type DefineBotPersonaInput = z.infer<typeof DefineBotPersonaInputSchema>;
  * Use Case для определения нового шаблона бота (BotPersona).
  * Принимает полное определение, создает агрегат, который проверяет
  * все инварианты, и сохраняет его в случае успеха.
+ * 
+ * После миграции на новый UI модуль, ViewDefinition теперь поддерживает:
+ * - MessageComponent: текстовые сообщения с вариантами оформления
+ * - ButtonComponent: интерактивные кнопки с действиями
+ * - CardComponent: карточки с заголовком, описанием и изображением
+ * - ProductCardComponent: карточки товаров с ценой и кнопкой "подробнее"
+ * - BotProductCardComponent: карточки ботов с функциями, стоимостью и интеграциями
+ * 
+ * Пример использования с новыми компонентами:
+ * 
+ * const botPersona = await defineBotPersonaUseCase({
+ *   name: "Витрина ботов",
+ *   fsmDefinition: {
+ *     initialStateId: "welcome",
+ *     states: [
+ *       { id: "welcome", type: "normal" },
+ *       { id: "bots-list", type: "normal" }
+ *     ],
+ *     transitions: [
+ *       { event: "view_bots", from: "welcome", to: "bots-list" }
+ *     ]
+ *   },
+ *   viewDefinition: {
+ *     nodes: [
+ *       {
+ *         id: "welcome",
+ *         components: [
+ *           {
+ *             id: "welcome-msg",
+ *             type: "message",
+ *             props: {
+ *               text: "Добро пожаловать! Выберите интересующий вас бот.",
+ *               variant: "info"
+ *             }
+ *           },
+ *           {
+ *             id: "view-bots-btn",
+ *             type: "button",
+ *             props: {
+ *               text: "Просмотреть ботов",
+ *               action: "view_bots"
+ *             }
+ *           }
+ *         ]
+ *       },
+ *       {
+ *         id: "bots-list",
+ *         components: [
+ *           {
+ *             id: "sales-assistant-card",
+ *             type: "bot-product-card",
+ *             props: {
+ *               modelName: "Sales Assistant Pro",
+ *               features: [
+ *                 "Автоматическая квалификация лида",
+ *                 "Интеграция с CRM"
+ *               ],
+ *               price: 29900,
+ *               currency: "RUB",
+ *               integrations: ["Telegram", "WhatsApp"],
+ *               actionText: "Подробнее",
+ *               action: "view_bot_details"
+ *             }
+ *           }
+ *         ]
+ *       }
+ *     ]
+ *   },
+ *   formDefinition: {
+ *     fields: []
+ *   }
+ * });
  */
 export async function defineBotPersonaUseCase(
 	input: DefineBotPersonaInput,

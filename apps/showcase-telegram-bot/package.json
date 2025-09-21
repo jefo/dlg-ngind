@@ -9,5 +9,9 @@
   "devDependencies": {
     "@types/bun": "latest",
     "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@dlg-ngind/bot-persona": "*",
+    "@dlg-ngind/chat": "*"
   }
 }
