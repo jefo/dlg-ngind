@@ -1,6 +1,12 @@
-import type { HydratedView } from "../../domain/ports.ts";
-
 // Импортируем типы Telegram
+import type { ViewProps } from "../../domain/view.aggregate.ts";
+import type {
+	BotProductCardComponent,
+	ButtonComponent,
+	CardComponent,
+	MessageComponent,
+	ProductCardComponent,
+} from "../../../ui/domain/components.value-object.ts";
 import type {
 	TelegramMessage,
 	TelegramInlineKeyboardButton,
@@ -15,7 +21,7 @@ import type {
  * в сообщения, понятные Telegram Bot API
  */
 export const telegramViewRenderedAdapter = async (
-	hydratedView: HydratedView,
+	hydratedView: ViewProps,
 	chatId: number | string,
 ): Promise<TelegramMessage[]> => {
 	const messages: TelegramMessage[] = [];
@@ -59,16 +65,14 @@ export const telegramViewRenderedAdapter = async (
  * Преобразование компонента сообщения в Telegram сообщение
  */
 const convertMessageComponent = (
-	component: any,
+	component: MessageComponent,
 	chatId: number | string,
 ): TelegramMessage => {
 	return {
 		chat_id: chatId,
 		text: component.props.text,
 		parse_mode: "HTML",
-		reply_markup: component.props.actions
-			? createInlineKeyboard(component.props.actions)
-			: undefined,
+		reply_markup: undefined,
 	};
 };
 
@@ -76,7 +80,7 @@ const convertMessageComponent = (
  * Преобразование компонента карточки в Telegram сообщение
  */
 const convertCardComponent = (
-	component: any,
+	component: CardComponent,
 	chatId: number | string,
 ): TelegramCardMessage => {
 	let text = `<b>${component.props.title}</b>`;
@@ -103,7 +107,7 @@ const convertCardComponent = (
  * Преобразование компонента карточки товара в Telegram сообщение
  */
 const convertProductCardComponent = (
-	component: any,
+	component: ProductCardComponent,
 	chatId: number | string,
 ): TelegramCardMessage => {
 	let text = `<b>${component.props.title}</b>`;
@@ -148,7 +152,7 @@ const convertProductCardComponent = (
  * Преобразование компонента карточки бота в Telegram сообщение
  */
 const convertBotProductCardComponent = (
-	component: any,
+	component: BotProductCardComponent,
 	chatId: number | string,
 ): TelegramCardMessage => {
 	let text = `<b>${component.props.modelName}</b>`;
@@ -198,7 +202,9 @@ const convertBotProductCardComponent = (
 /**
  * Создание inline клавиатуры из кнопок
  */
-const createInlineKeyboard = (actions: any[]): TelegramReplyMarkup => {
+const createInlineKeyboard = (
+	actions: ButtonComponent[],
+): TelegramReplyMarkup => {
 	const buttons: TelegramInlineKeyboardButton[] = actions.map((action) => ({
 		text: action.props.text,
 		callback_data: action.props.action,

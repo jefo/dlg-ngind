@@ -41,6 +41,8 @@ export function composeChatApp(config: { channel?: string }) {
 	setPortAdapter(serviceStartedOutPort, (channel) => {
 		console.log(`[ServiceStarted]: Started on channel ${channel}`);
 	});
+	
+	setPortAdapter()
 
 	// --- Bind output ports ---
 	setPortAdapter(messageSentOutPort, async (dto) => {

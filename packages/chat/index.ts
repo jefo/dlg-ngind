@@ -1,4 +1,3 @@
-export * as App from "./src/application";
-export * as Infra from "./src/infrastructure";
-export * as Domain from "./src/domain";
-export * from "./src/composition";
+export * from "./src/bots";
+export * from "./src/messenging";
+export * from "./src/ui";

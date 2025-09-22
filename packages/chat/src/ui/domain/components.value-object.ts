@@ -13,6 +13,7 @@ export const MessageComponentSchema = z.object({
 	}),
 });
 
+export type MessageComponent = z.infer<typeof MessageComponentSchema>;
 export const MessageComponent = createValueObject(MessageComponentSchema);
 
 // Компонент кнопки
@@ -26,6 +27,7 @@ export const ButtonComponentSchema = z.object({
 	}),
 });
 
+export type ButtonComponent = z.infer<typeof ButtonComponentSchema>;
 export const ButtonComponent = createValueObject(ButtonComponentSchema);
 
 // Компонент карточки
@@ -40,6 +42,7 @@ export const CardComponentSchema = z.object({
 	}),
 });
 
+export type CardComponent = z.infer<typeof CardComponentSchema>;
 export const CardComponent = createValueObject(CardComponentSchema);
 
 // Компонент карточки товара
@@ -57,6 +60,7 @@ export const ProductCardComponentSchema = z.object({
 	}),
 });
 
+export type ProductCardComponent = z.infer<typeof ProductCardComponentSchema>;
 export const ProductCardComponent = createValueObject(
 	ProductCardComponentSchema,
 );
@@ -76,6 +80,7 @@ export const BotProductCardComponentSchema = z.object({
 	}),
 });
 
+export type BotProductCardComponent = z.infer<typeof BotProductCardComponentSchema>;
 export const BotProductCardComponent = createValueObject(
 	BotProductCardComponentSchema,
 );
