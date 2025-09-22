@@ -19,6 +19,8 @@ dlg-ngind/
 │   ├── bot-persona/     # Bot personality and design domain
 │   ├── chat/            # Chat functionality
 │   └── event-bus/       # Event handling system
+├── apps/                # Application implementations
+│   └── showcase-telegram-bot/ # Telegram bot showcase implementation
 ├── docs/                # Project documentation
 ├── examples/            # Example implementations
 └── specs/               # Specifications
@@ -52,6 +54,34 @@ SotaJS is a TypeScript framework focused on business logic as the most valuable 
 - **GraphYa:** Graph-based system for managing dialogue flows
 - **Bot Persona:** System for defining bot personalities and behaviors
 - **Conversation Management:** Runtime handling of active dialogues
+- **UI Rendering:** System for rendering dialogue views and components across different platforms
+- **View Definition:** System for defining UI views and components for bot interactions
+
+## UI Rendering System
+
+The dlg-ngind platform now includes a comprehensive UI rendering system that allows bots to present rich interfaces across different platforms. Key features include:
+
+- **View Definitions:** Declarative view definitions that describe the UI components to render
+- **Component System:** Reusable UI components (buttons, forms, messages, etc.)
+- **Platform Adapters:** Adapters for different messaging platforms (Telegram, Web, etc.)
+- **Presenter Pattern:** Separation of UI rendering logic from platform-specific implementation
+
+### UI Architecture
+1. **View Definitions** are created as part of the bot persona design
+2. **Runtime System** determines which view to show based on conversation state
+3. **UI System** renders the view using platform-specific adapters
+4. **Presenters** handle the actual presentation on each platform
+
+### UI Package Structure
+```
+ui/
+├── domain/              # UI domain models (views, components)
+├── application/         # UI use cases (rendering logic)
+├── infrastructure/      # UI adapters and ports
+├── presentation/        # Platform-specific presenters
+│   └── telegram/        # Telegram-specific implementation
+└── tests/               # UI system tests
+```
 
 ## Development Workflow
 
@@ -62,6 +92,9 @@ bun install
 
 # Run the project
 bun run index.ts
+
+# Run the showcase Telegram bot
+cd apps/showcase-telegram-bot && bun run index.ts
 ```
 
 ### Package Structure
@@ -71,6 +104,7 @@ package/
 ├── src/
 │   ├── domain/          # Domain models (aggregates, entities, value objects)
 │   ├── app/             # Use cases and business logic
+│   ├── ui/              # UI rendering system (views, components, presenters)
 │   └── infra/           # Infrastructure adapters and ports
 ├── tests/               # Unit and integration tests
 └── docs/                # Package-specific documentation
@@ -130,6 +164,9 @@ The DI system is built on key functions:
 7. **packages/bot-persona/BOT_PERSONA.md:** Entry point for the Bot Persona context
 8. **packages/chat/CHAT.md:** Entry point for the Chat context
 9. **packages/event-bus/EVENT_BUS.md:** Entry point for the Event Bus context
+10. **packages/chat/src/ui/README.md:** UI rendering system documentation
+11. **packages/chat/src/ui/ARCHITECTURE.md:** UI system architecture documentation
+12. **packages/chat/src/ui/INTEGRATION_GUIDE.md:** Guide for integrating UI components with different platforms
 
 ## Getting Started
 
