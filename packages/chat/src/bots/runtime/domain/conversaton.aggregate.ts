@@ -5,6 +5,7 @@ import {
 	FsmDefinitionSchema,
 	FormEntity,
 	FormEntitySchema,
+	type FormState,
 } from "../../desing/domain";
 import {
 	BotProductCardComponentSchema,
@@ -44,13 +45,19 @@ export const Conversation = createAggregate({
 	},
 	computed: {
 		isActive: (state) => state.status === "active",
-		isFinished: (state) => state.status === "finished",
+		isFinished: (state) =>
+			!state.fsmDefinition.transitions.some(
+				(t) => t.from === state.currentStateId,
+			),
 		currentView: (state): ViewProps => {
 			const viewNode = state.viewMap[state.currentStateId];
 			if (!viewNode)
 				throw new Error("Current state not found in view definition");
 
 			return viewNode;
+		},
+		formData: (state): Record<string, unknown> => {
+			return state.form.data;
 		},
 	},
 	actions: {
@@ -155,19 +162,6 @@ export const Conversation = createAggregate({
 			}
 
 			state.currentStateId = transition.to;
-
-			const isFinal = !state.fsmDefinition.transitions.some(
-				(t) => t.from === state.currentStateId,
-			);
-
-			if (isFinal) {
-				state.status = "finished";
-			}
-
-			state.updatedAt = new Date();
-		},
-		finish: (state) => {
-			state.status = "finished";
 			state.updatedAt = new Date();
 		},
 	},

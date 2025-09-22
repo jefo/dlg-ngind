@@ -9,6 +9,7 @@ import {
 	conversationNotFoundOutPort,
 	invalidInputOutPort,
 } from "./ports";
+import { renderMessagePort } from "../domain/ports";
 
 // --- Входной DTO и его схема ---
 
@@ -34,7 +35,7 @@ export async function handleEventUseCase(
 	const saveConversation = usePort(saveConversationPort);
 	const conversationNotFound = usePort(conversationNotFoundOutPort);
 	const invalidInput = usePort(invalidInputOutPort);
-	const viewRender = usePort(viewRenderOutPort);
+	const renderMessage = usePort(renderMessagePort);
 	const conversationFinished = usePort(conversationFinishedOutPort);
 
 	try {
@@ -54,20 +55,16 @@ export async function handleEventUseCase(
 		// 6. Сохраняем измененное состояние (это аннулирует Proxy)
 		await saveConversation(conversation.state);
 
-		// TODO: render current view
 		// 7. Отправляем пользователю новое представление, используя локальную переменную
 		if (conversation.currentView) {
-			await viewRender({
-				chatId: chatId,
-				viewNode: {
-					id: nextView.id,
-					components: nextView.components,
-				},
+			await renderMessage({
+				view: conversation.currentView,
+				data: conversation.formData,
 			});
 		}
 
 		// 8. Если диалог завершился, уведомляем систему
-		if (isFinished) {
+		if (conversation.isFinished) {
 			await conversationFinished({ chatId });
 		}
 	} catch (error: any) {

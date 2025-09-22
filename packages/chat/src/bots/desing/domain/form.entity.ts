@@ -58,6 +58,7 @@ export const FormFieldValueSchema = z.object({
 });
 
 export const FormStateSchema = z.record(z.string(), FormFieldValueSchema);
+export type FormState = z.infer<typeof FormStateSchema>;
 
 // --- Main Schema for the SotaJS Entity ---
 
@@ -71,7 +72,7 @@ export const FormEntitySchema = z.object({
 
 export type FormDefinition = z.infer<typeof FormDefinitionSchema>;
 export type FormField = z.infer<typeof FormFieldSchema>;
-type FormEntityState = z.infer<typeof FormEntitySchema>;
+export type FormEntityProps = z.infer<typeof FormEntitySchema>;
 
 // --- Pure Validation Logic ---
 
@@ -145,7 +146,7 @@ export const FormEntity = createAggregate({
 	invariants: [],
 	actions: {
 		setFieldValue: (
-			state: FormEntityState,
+			state: FormEntityProps,
 			{ fieldId, value }: { fieldId: string; value: any },
 		) => {
 			const fieldDefinition = state.definition.fields.find(

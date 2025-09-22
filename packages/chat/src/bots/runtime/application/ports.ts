@@ -1,6 +1,7 @@
 import { createPort } from "@maxdev1/sotajs";
 import type { FailureDto } from "../../shared/dtos";
 import type { ComponentRenderDto } from "../dtos";
+import type { ViewDto } from "../../../ui/application/use-cases/ui.dto";
 // import type { ViewRenderDto } from "../dtos";
 
 // --- Выходные Порты (Output Ports) для под-домена Runtime ---
@@ -11,12 +12,6 @@ import type { ComponentRenderDto } from "../dtos";
  */
 export const componentRenderOutPort =
 	createPort<(dto: ComponentRenderDto) => Promise<void>>();
-
-/**
- * Сообщает о необходимости отрендерить всё представление (все компоненты для состояния FSM).
- */
-// export const viewRenderOutPort =
-// 	createPort<(dto: ViewRenderDto) => Promise<void>>();
 
 /**
  * Сообщает о завершении диалога.
@@ -35,20 +30,3 @@ export const invalidInputOutPort =
  */
 export const conversationNotFoundOutPort =
 	createPort<(dto: FailureDto) => Promise<void>>();
-
-/**
- * DTO для запуска nurturing-цепочки.
- */
-export type StartNurturingSequenceDto = {
-	chatId: string;
-	contactInfo?: {
-		email?: string;
-		name?: string;
-	};
-};
-
-/**
- * Сообщает о необходимости запустить nurturing-цепочку для лида.
- */
-export const startNurturingSequenceOutPort =
-	createPort<(dto: StartNurturingSequenceDto) => Promise<void>>();
